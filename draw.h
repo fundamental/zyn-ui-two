@@ -1,7 +1,12 @@
 #include "nanovg/nanovg.h"
 
+#define SCALE(v,x,y,w,h) x + (1-v)*w/2, y + (1-v)*h/2, v*w, v*h
+#define BOARDER(v,x,y,w,h) x+v,y+v, w-2*v, h-2*v
+
+
 void drawDial(NVGcontext *vg, int x, int y, int w, int h);
 void drawLabel(NVGcontext *vg, const char *str, int x, int y, int w, int h);
+void drawLeftLabel(NVGcontext *vg, const char *str, int x, int y, int w, int h);
 void drawDialValue(NVGcontext *vg, int val, int x, int y, int w, int h);
 void drawBox(NVGcontext *vg, int x, int y, int w, int h);
 void drawButton(NVGcontext *vg, const char *str, int x, int y, int w, int h);
@@ -10,6 +15,7 @@ void drawButtonGrid(NVGcontext *vg, int n, int m, int x, int y, int w, int h);
 void drawGrid(NVGcontext *vg, int n, int m, int x, int y, int w, int h);
 void drawSin(NVGcontext *vg, int x, int y, int w, int h);
 void drawAltDial(NVGcontext *vg, int x, int y, int w, int h);
+void drawEnvEdit(NVGcontext *vg, float *dat, int n, int m, int x, int y, int w, int h);
 ;;;;;;
 
 typedef struct

@@ -74,14 +74,42 @@ void drawDialValue(NVGcontext *vg, int val, int x, int y, int w, int h)
 	nvgText(vg, X+W/2,Y+H*0.5f,str, NULL);
 }
 
+//------------------------------------------------------------------------------
 void drawLabel(NVGcontext *vg, const char *str, int x, int y, int w, int h)
 {
 	nvgFontSize(vg, h*1.0);
 	nvgFontFace(vg, "sans");
-	nvgFillColor(vg, nvgRGBA(0x22, 0x9b, 0xdb, 128));
+	//nvgFillColor(vg, nvgRGBA(0x22, 0x9b, 0xdb, 128));
+	nvgFillColor(vg, nvgRGBA(0x32, 0xb7, 0xdd, 255));
 
 	nvgTextAlign(vg,NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);
+    
+    float bounds[4];
+    nvgTextBounds(vg, x,y, str, NULL, bounds);
+    if((bounds[2]-bounds[0]) > w) //horizontally constrained case
+        nvgFontSize(vg, h*w*1.0/(bounds[2]-bounds[0]));
+
 	nvgText(vg, x+w/2,y+h*0.5f,str, NULL);
+}
+
+//------------------------------------------------------------------------------
+void drawLeftLabel(NVGcontext *vg, const char *str, int x, int y, int w, int h)
+{
+
+	nvgFontSize(vg, h*1.0);
+	nvgFontFace(vg, "sans");
+	//nvgFillColor(vg, nvgRGBA(0x22, 0x9b, 0xdb, 128));
+	nvgFillColor(vg, nvgRGBA(0x32, 0xb7, 0xdd, 255));
+
+	nvgTextAlign(vg,NVG_ALIGN_LEFT|NVG_ALIGN_MIDDLE);
+
+    float bounds[4];
+    nvgTextBounds(vg, x,y, str, NULL, bounds);
+    if((bounds[2]-bounds[0]) > w) //horizontally constrained case
+        nvgFontSize(vg, h*w*1.0/(bounds[2]-bounds[0]));
+
+
+	nvgText(vg, x,y+h*0.5f,str, NULL);
 }
 
 //------------------------------------------------------------------------------
@@ -109,6 +137,12 @@ void drawButtonScale(NVGcontext *vg, float scale, const char *str, int x, int y,
 	nvgFillColor(vg, nvgRGBA(0x22, 0x9b, 0xdb, 255));
 
 	nvgTextAlign(vg,NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);
+
+    float bounds[4];
+    nvgTextBounds(vg, x,y, str, NULL, bounds);
+    if((bounds[2]-bounds[0]) > w) //horizontally constrained case
+        nvgFontSize(vg, h*scale*w*1.0/(bounds[2]-bounds[0]));
+
 	nvgText(vg, x+w/2,y+h*0.5f,str, NULL);
 }
 //------------------------------------------------------------------------------
@@ -125,15 +159,15 @@ void drawOptButton(NVGcontext *vg, const char *str, int x, int y, int w, int h)
 
     nvgBeginPath(vg);
     nvgRect(vg, x,y,w,h);
-	nvgFillColor(vg, nvgRGBA(155,155,155,128));
-    nvgStrokeColor(vg, nvgRGBA(0,0,0,255));
+	nvgFillColor(vg, nvgRGBA(0x12,0x58, 0x5d,255));
+    nvgStrokeColor(vg, nvgRGBA(0x10,0x7a,0xa3,255));
     nvgFill(vg);
     nvgStroke(vg);
 
 
 	nvgFontSize(vg, h*0.6);
 	nvgFontFace(vg, "sans");
-	nvgFillColor(vg, nvgRGBA(255,255,255,128));
+	nvgFillColor(vg, nvgRGBA(0x22, 0x9b, 0xdb, 255));
 
 	nvgTextAlign(vg,NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);
 	nvgText(vg, x+(w-h)/2,y+h*0.5f,str, NULL);
@@ -217,18 +251,20 @@ void drawAltDial(NVGcontext *vg, int x, int y, int w, int h)
     //nvgClosePath(NVGcontext* ctx);
     //nvgLineTo(NVGcontext* ctx, float x, float y);
 	//nvgCircle(vg, cx, cy, kr-1);
-	nvgFillColor(vg, nvgRGBA(0x3a,0xc5,0xec,255));
+	//nvgFillColor(vg, nvgRGBA(0x3a,0xc5,0xec,255));
+	nvgFillColor(vg, nvgRGBA(0x11,0x45,0x75,255));
 	nvgFill(vg);
 	
 
-    //float endd = end-0.2*(end-start);
-    //
-    //nvgBeginPath(vg);
-    //nvgArc(vg, cx, cy, 0.2*h, endd, start, 2);
-    //nvgArc(vg, cx, cy, 0.4*h, start, endd, 1);
-    //nvgClosePath(vg);
-	//nvgFillColor(vg, nvgRGBA(200,43,48,255));
-	//nvgFill(vg);
+    const float len = (3.0/2.0*M_PI)*0.3;
+    float startt = end + len;
+    
+    nvgBeginPath(vg);
+    nvgArc(vg, cx, cy, 0.2*h, end, startt, 2);
+    nvgArc(vg, cx, cy, 0.4*h, startt, end, 1);
+    nvgClosePath(vg);
+	nvgFillColor(vg, nvgRGBA(0x3a,0xc5,0xec,255));
+	nvgFill(vg);
 
 }
 //------------------------------------------------------------------------------
