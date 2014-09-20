@@ -158,25 +158,3 @@ void layoutDestroy(layout_t layout)
     delete (LayoutEngine*)layout;
 }
 
-//[0:x, 1:y, 2:w, 3:h]
-float *pad(float scale, float *bb)
-{
-    float cx = bb[0] + bb[2]/2.0;
-    float cy = bb[1] + bb[3]/2.0;
-    float w  = bb[2]*scale;
-    float h  = bb[3]*scale;
-    bb[0] = cx - w/2.0;
-    bb[1] = cy - h/2.0;
-    bb[2] = w;
-    bb[3] = h;
-    return bb;
-}
-
-float *boarder(float scale, float *bb)
-{
-    bb[0] += scale;
-    bb[1] += scale;
-    bb[2] -= 2*scale;
-    bb[3] -= 2*scale;
-    return bb;
-}

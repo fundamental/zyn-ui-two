@@ -47,7 +47,7 @@ void drawDial(NVGcontext *vg, int x, int y, int w, int h)
 	nvgFillColor(vg, nvgRGBA(0x11,0x45,0x75,255));
 	nvgFill(vg);
 	
-    
+
     nvgBeginPath(vg);
     nvgArc(vg, cx, cy, 0.4*h, -1.8, 0.5*M_PI, 1);
     nvgArc(vg, cx, cy, 0.2*h, 0.5*M_PI, -1.8, 2);
@@ -65,7 +65,7 @@ void drawDialValue(NVGcontext *vg, int val, int x, int y, int w, int h)
     int Y = y+h/2;
     int W = w/2;
     int H = h/2;
-    
+
 	nvgFontSize(vg, H*0.6);
 	nvgFontFace(vg, "sans");
 	nvgFillColor(vg, nvgRGBA(255,255,255,128));
@@ -83,7 +83,7 @@ void drawLabel(NVGcontext *vg, const char *str, int x, int y, int w, int h)
 	nvgFillColor(vg, nvgRGBA(0x32, 0xb7, 0xdd, 255));
 
 	nvgTextAlign(vg,NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);
-    
+
     float bounds[4];
     nvgTextBounds(vg, x,y, str, NULL, bounds);
     if((bounds[2]-bounds[0]) > w) //horizontally constrained case
@@ -194,7 +194,7 @@ void drawButtonGrid(NVGcontext *vg, int n, int m, int x, int y, int w, int h)
         }
     }
 }
-        
+
 //------------------------------------------------------------------------------
 void drawGrid(NVGcontext *vg, int n, int m, int x, int y, int w, int h)
 {
@@ -258,7 +258,7 @@ void drawAltDial(NVGcontext *vg, int x, int y, int w, int h)
 
     const float len = (3.0/2.0*M_PI)*0.3;
     float startt = end + len;
-    
+
     nvgBeginPath(vg);
     nvgArc(vg, cx, cy, 0.2*h, end, startt, 2);
     nvgArc(vg, cx, cy, 0.4*h, startt, end, 1);
@@ -267,6 +267,100 @@ void drawAltDial(NVGcontext *vg, int x, int y, int w, int h)
 	nvgFill(vg);
 
 }
+
+//------------------------------------------------------------------------------
+void drawEnvEdit(NVGcontext *vg, float *dat, int n, int m, int x, int y, int w, int h)
+{
+    nvgBeginPath(vg);
+    nvgRect(vg, x,y,w,h);
+	nvgFillColor(vg, nvgRGBA(0x0d,0x0d,0x0d,255));
+    nvgStrokeColor(vg, nvgRGBA(0x01, 0x47, 0x67,255));
+    nvgFill(vg);
+    nvgStroke(vg);
+
+
+    //Draw UnderLine
+    ////Bottom Half
+    nvgScissor(vg, x,y+h/2,w,h/2);
+    nvgBeginPath(vg);
+    nvgMoveTo(vg, x,y);
+    for(int i=0; i<n; ++i)
+        nvgLineTo(vg, x+w*dat[2*i+1], y+h/2-h/2*dat[2*i]);
+    nvgLineTo(vg, x+w, y);
+    nvgClosePath(vg);
+	nvgFillColor(vg, nvgRGBA(0x11,0x45,0x75,55));
+    nvgFill(vg);
+    nvgResetScissor(vg);
+    ////Upper Half
+    nvgScissor(vg, x,y,w,h/2);
+    nvgBeginPath(vg);
+    nvgMoveTo(vg, x,y+h);
+    for(int i=0; i<n; ++i)
+        nvgLineTo(vg, x+w*dat[2*i+1], y+h/2-h/2*dat[2*i]);
+    nvgMoveTo(vg, x+w, y+h);
+    nvgClosePath(vg);
+	nvgFillColor(vg, nvgRGBA(0x11,0x45,0x75,55));
+    nvgFill(vg);
+    nvgResetScissor(vg);
+
+    //Draw Zero Line
+    nvgBeginPath(vg);
+    nvgMoveTo(vg, x, y+h/2);
+    nvgLineTo(vg, x+w, y+h/2);
+	nvgStrokeColor(vg, nvgRGBA(0x11,0x45,0x75,255));
+    nvgStroke(vg);
+
+    //Draw Sel Line
+    if(m >= 0 && m <n) {
+        nvgBeginPath(vg);
+        nvgMoveTo(vg, x+w*dat[2*m+1], y);
+        nvgLineTo(vg, x+w*dat[2*m+1], y+h);
+        nvgStrokeColor(vg, nvgRGBA(0x11,0x45,0x75,255));
+        nvgStroke(vg);
+    }
+
+    //Draw Actual Line
+    nvgBeginPath(vg);
+    nvgMoveTo(vg, x+w*dat[1], y+h-h*dat[0]);
+    for(int i=0; i<n; ++i)
+        nvgLineTo(vg, x+w*dat[2*i+1], y+h/2-h/2*dat[2*i]);
+    nvgStrokeWidth(vg, 4);
+	nvgStrokeColor(vg, nvgRGBA(0x11,0x45,0x75,255));
+    nvgStroke(vg);
+    nvgStrokeWidth(vg, 1);
+
+    //Draw Grabbable Points
+    for(int i=0; i<n; ++i)  {
+        float xx = x+w*dat[2*i+1];
+        float yy = y+h/2-h/2*dat[2*i];
+        nvgBeginPath(vg);
+        nvgRect(vg, xx-5,yy-5,10,10);
+        nvgFillColor(vg, nvgRGBA(0,0,0,255));
+        nvgStrokeColor(vg, nvgRGBA(0x10,0x7a,0xa3,255));
+        nvgFill(vg);
+        nvgStroke(vg);
+    }
+
+}
+//------------------------------------------------------------------------------
+void drawHZSlider(NVGcontext *vg, int x, int y, int w, int h)
+{
+    nvgBeginPath(vg);
+    nvgRect(vg, x,y,w,h);
+	nvgFillColor(vg, nvgRGBA(0x0d,0x0d,0x0d,255));
+    nvgFill(vg);
+
+    float pos[4] = {(float)x,(float)y,(float)w,(float)h};
+    boarder(0.1*h, pos);
+    float cx = x+w/2;
+
+    //fill color
+    nvgBeginPath(vg);
+    nvgRect(vg, cx,pos[1],pos[2]/3.0,pos[3]);
+    nvgFillColor(vg, nvgRGBA(0xb, 0x2b, 0x4d,255));
+    nvgFill(vg);
+}
+
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
@@ -275,4 +369,28 @@ void renderDial(NVGcontext *vg, dial_t dial)
     drawDial(vg, dial.x, dial.y,dial.w,dial.w);
     drawDialValue(vg, dial.val, dial.x, dial.y, dial.w, dial.w);
     drawLabel(vg, dial.label,dial.x, dial.y+dial.w, dial.w, dial.w/3);
+}
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//[0:x, 1:y, 2:w, 3:h]
+float *pad(float scale, float *bb)
+{
+    float cx = bb[0] + bb[2]/2.0;
+    float cy = bb[1] + bb[3]/2.0;
+    float w  = bb[2]*scale;
+    float h  = bb[3]*scale;
+    bb[0] = cx - w/2.0;
+    bb[1] = cy - h/2.0;
+    bb[2] = w;
+    bb[3] = h;
+    return bb;
+}
+
+float *boarder(float scale, float *bb)
+{
+    bb[0] += scale;
+    bb[1] += scale;
+    bb[2] -= 2*scale;
+    bb[3] -= 2*scale;
+    return bb;
 }

@@ -3,6 +3,7 @@ extern "C" {
 #endif
 typedef void *layout_t;
 #define SPLAT(x) x[0], x[1], x[2], x[3]
+#define SMAP(X) const float x=X[0], y=X[1], w=X[2], h=X[3]
 
 #define LAYOUT_NONE   (0)
 #define LAYOUT_LABELS (1)
@@ -16,8 +17,6 @@ void layoutFlow(layout_t, float x, float y, float w, float h);
 void layoutGet(layout_t, int, float *);
 void layoutGetLabel(layout_t, int, float *);
 
-float *pad(float scale, float *bb);
-float *boarder(float scale, float *bb);
 #ifdef __cplusplus
 }
 #endif
