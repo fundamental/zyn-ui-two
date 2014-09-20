@@ -3,11 +3,17 @@ extern "C" {
 #endif
 typedef void *layout_t;
 
-layout_t layoutCreate(void);
+#define LAYOUT_NONE   0
+#define LAYOUT_LABELS 1
+
+layout_t layoutCreate(int traits);
 void layoutBoundBox(layout_t layout, float aspect, float rel);
 void layoutDestroy(layout_t);
 void layoutFlow(layout_t, int x, int y, int w, int h);
 void layoutGet(layout_t, int, float *);
+void layoutGetLabel(layout_t, int, float *);
+
+void pad(float scale, float *bb);
 #ifdef __cplusplus
 }
 #endif

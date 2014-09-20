@@ -79,7 +79,7 @@ int main()
 
 		nvgBeginFrame(vg, winWidth, winHeight, pxRatio);
 
-        viewLFO(vg, 0,0,winHeight, winWidth);
+        viewLFO(vg, 0,0,winWidth, winHeight);
 #if 0
         dial_t dial = {60, 0, 0, 100, "label"};
         renderDial(vg, dial);
