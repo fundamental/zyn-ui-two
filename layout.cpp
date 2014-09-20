@@ -129,11 +129,13 @@ void layoutGet(layout_t layout, int elm, float *pos)
         return;
     }
     float x_off = l.x;
-    if(l.expandable_id == 0)
-        x_off += l.unused_space;
     for(int i=0; i<elm; ++i) {
+        if(l.expandable_id == i)
+            x_off += l.unused_space;
         x_off += l.boxes[i].rel/(l.unit_cost*l.boxes[i].aspect);
     }
+    if(l.expandable_id == elm)
+        x_off += l.unused_space;
     assert(x_off >= 0);
     pos[0] = x_off;
     pos[3] = l.boxes[elm].rel/l.unit_cost;
@@ -152,6 +154,8 @@ void layoutGetLabel(layout_t layout, int elm, float *pos)
             x_off += l.unused_space;
         x_off += l.boxes[i].rel/(l.unit_cost*l.boxes[i].aspect);
     }
+    if(l.expandable_id == elm)
+        x_off += l.unused_space;
     pos[0] = l.x+x_off;
     pos[3] = l.label_h;
     pos[2] = l.boxes[elm].rel/(l.unit_cost*l.boxes[elm].aspect);

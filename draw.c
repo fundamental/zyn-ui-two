@@ -175,9 +175,9 @@ void drawOptButton(NVGcontext *vg, const char *str, int x, int y, int w, int h)
 	nvgTextAlign(vg,NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);
     float bounds[4];
     nvgTextBounds(vg, x,y, str, NULL, bounds);
-    if((bounds[2]-bounds[0]) > w-h) //horizontally constrained case
-        nvgFontSize(vg, h*(w-h)*0.6/(bounds[2]-bounds[0]));
-	nvgText(vg, x+(w-h)/2,y+h*0.5f,str, NULL);
+    if((bounds[2]-bounds[0]) > w-h-h/4) //horizontally constrained case
+        nvgFontSize(vg, h*(w-h-h/4)*0.6/(bounds[2]-bounds[0]));
+	nvgText(vg, x+h/4+(w-h)/2,y+h*0.5f,str, NULL);
 }
 
 //------------------------------------------------------------------------------

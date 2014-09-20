@@ -60,6 +60,7 @@ void viewReverb(NVGcontext *vg, int x, int y, int w, int h)
     mod.inner.pad_factor = 0.9;
     mod.inner.add(new DropDown(vg, "CATHEDRAL 1"), 1.0/3.0, 1, "PRESET");
     mod.inner.add(new DropDown(vg, "BANDWIDTH"), 1.0/3.0, 1, "TYPE");
+    layoutDummyBox(mod.inner.layout);
     mod.inner.add(new Knob(vg), 1, 1.5, "R.S");
     mod.inner.add(new Knob(vg), 1, 1.5, "D/W");
     mod.inner.add(new Knob(vg), 1, 1.5, "PAN");
