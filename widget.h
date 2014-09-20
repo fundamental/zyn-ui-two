@@ -100,7 +100,10 @@ struct Module:public Parent
 {
     string label;
     Module(NVGcontext *vg, string label_)
-        :Parent(vg), inner(vg), upper(vg), label(label_) {}
+        :Parent(vg), inner(vg), upper(vg), label(label_)
+    {
+        layoutDummyBox(upper.layout);
+    }
     virtual void draw(float*pos_)
     {
         //Paint the Whole thing black

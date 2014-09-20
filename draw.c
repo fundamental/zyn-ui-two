@@ -40,10 +40,6 @@ void drawDial(NVGcontext *vg, int x, int y, int w, int h)
     nvgArc(vg, cx, cy, 0.4*h, 0, 1.0/2.0*M_PI, 1);
     nvgArc(vg, cx, cy, 0.2*h, 1.0/2.0*M_PI, 0, 2);
     nvgClosePath(vg);
-    //nvgArc(NVGcontext* ctx, float cx, float cy, float r, float a0, float a1, int dir);
-    //nvgClosePath(NVGcontext* ctx);
-    //nvgLineTo(NVGcontext* ctx, float x, float y);
-	//nvgCircle(vg, cx, cy, kr-1);
 	nvgFillColor(vg, nvgRGBA(0x11,0x45,0x75,255));
 	nvgFill(vg);
 	
@@ -164,19 +160,24 @@ void drawOptButton(NVGcontext *vg, const char *str, int x, int y, int w, int h)
     nvgFill(vg);
     nvgStroke(vg);
 
-
-	nvgFontSize(vg, h*0.6);
-	nvgFontFace(vg, "sans");
-	nvgFillColor(vg, nvgRGBA(0x22, 0x9b, 0xdb, 255));
-
-	nvgTextAlign(vg,NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);
-	nvgText(vg, x+(w-h)/2,y+h*0.5f,str, NULL);
 	
     nvgFontSize(vg, h*0.6);
 	nvgFontFace(vg, "icons");
 	nvgFillColor(vg, nvgRGBA(255,255,255,128));
 	nvgTextAlign(vg,NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);
 	nvgText(vg, x+w-h/2,y+h*0.5f,cpToUTF8(ICON_DOWN,icon), NULL);
+	
+    
+    nvgFontSize(vg, h*0.6);
+	nvgFontFace(vg, "sans");
+	nvgFillColor(vg, nvgRGBA(0x22, 0x9b, 0xdb, 255));
+
+	nvgTextAlign(vg,NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);
+    float bounds[4];
+    nvgTextBounds(vg, x,y, str, NULL, bounds);
+    if((bounds[2]-bounds[0]) > w-h) //horizontally constrained case
+        nvgFontSize(vg, h*(w-h)*0.6/(bounds[2]-bounds[0]));
+	nvgText(vg, x+(w-h)/2,y+h*0.5f,str, NULL);
 }
 
 //------------------------------------------------------------------------------
@@ -247,11 +248,6 @@ void drawAltDial(NVGcontext *vg, int x, int y, int w, int h)
     nvgArc(vg, cx, cy, 0.4*h, start, end, 1);
     nvgArc(vg, cx, cy, 0.2*h, end, start, 2);
     nvgClosePath(vg);
-    //nvgArc(NVGcontext* ctx, float cx, float cy, float r, float a0, float a1, int dir);
-    //nvgClosePath(NVGcontext* ctx);
-    //nvgLineTo(NVGcontext* ctx, float x, float y);
-	//nvgCircle(vg, cx, cy, kr-1);
-	//nvgFillColor(vg, nvgRGBA(0x3a,0xc5,0xec,255));
 	nvgFillColor(vg, nvgRGBA(0x11,0x45,0x75,255));
 	nvgFill(vg);
 	

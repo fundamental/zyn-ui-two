@@ -12,6 +12,7 @@ typedef void *layout_t;
 
 layout_t layoutCreate(int traits);
 void layoutBoundBox(layout_t layout, float aspect, float rel);
+void layoutDummyBox(layout_t layout);
 void layoutDestroy(layout_t);
 void layoutFlow(layout_t, float x, float y, float w, float h);
 void layoutGet(layout_t, int, float *);
