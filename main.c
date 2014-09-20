@@ -79,9 +79,9 @@ int main()
 
 		nvgBeginFrame(vg, winWidth, winHeight, pxRatio);
 
-        viewFilterEnv(vg, 0,0, winWidth, winHeight);
-#if 0
         viewLFO(vg, 0,0, winWidth, winHeight);
+#if 0
+        viewFilterEnv(vg, 0,0, winWidth, winHeight);
         dial_t dial = {60, 0, 0, 100, "label"};
         renderDial(vg, dial);
         drawButton(vg, "banana", 100, 25, 100, 50);

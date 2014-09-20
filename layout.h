@@ -2,6 +2,7 @@
 extern "C" {
 #endif
 typedef void *layout_t;
+#define SPLAT(x) x[0], x[1], x[2], x[3]
 
 #define LAYOUT_NONE   (0)
 #define LAYOUT_LABELS (1)

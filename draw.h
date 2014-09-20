@@ -1,4 +1,8 @@
 #include "nanovg/nanovg.h"
+#pragma once
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define SCALE(v,x,y,w,h) x + (1-v)*w/2, y + (1-v)*h/2, v*w, v*h
 #define BOARDER(v,x,y,w,h) x+v,y+v, w-2*v, h-2*v
@@ -26,3 +30,6 @@ typedef struct
 } dial_t;
 
 void renderDial(NVGcontext *vg, dial_t dial);
+#ifdef __cplusplus
+}
+#endif
