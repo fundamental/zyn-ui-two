@@ -24,6 +24,8 @@ void drawSin(NVGcontext *vg, int x, int y, int w, int h);
 void drawAltDial(NVGcontext *vg, int x, int y, int w, int h);
 void drawEnvEdit(NVGcontext *vg, float *dat, int n, int m, int x, int y, int w, int h);
 void drawHZSlider(NVGcontext *vg, int x, int y, int w, int h);
+void drawVZSlider(NVGcontext *vg, int x, int y, int w, int h);
+void drawOscArray(NVGcontext *vg, int x, int y, int w, int h);
 ;;;;;;
 
 typedef struct

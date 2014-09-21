@@ -358,6 +358,50 @@ void drawHZSlider(NVGcontext *vg, int x, int y, int w, int h)
 }
 
 //------------------------------------------------------------------------------
+void drawVZSlider(NVGcontext *vg, int x, int y, int w, int h)
+{
+    nvgBeginPath(vg);
+    nvgRect(vg, x,y,w,h);
+	nvgFillColor(vg, nvgRGBA(0x0d,0x0d,0x0d,255));
+    nvgFill(vg);
+
+    float pos[4] = {(float)x,(float)y,(float)w,(float)h};
+    boarder(0.1*w, pos);
+    float cy = y+h/2;
+
+    //fill color
+    nvgBeginPath(vg);
+    nvgRect(vg, pos[0], cy ,pos[2],pos[3]/3.0);
+	nvgFillColor(vg, nvgRGBA(0x3a,0xc5,0xec,255));
+    nvgFill(vg);
+}
+void drawOscArray(NVGcontext *vg, int x, int y, int w, int h)
+{
+    for(int i=0; i<10; ++i)
+    {
+        //Draw BackGround
+        {
+            float pos[4] = {30.0f*i, 0.0f, 30.0f, 270.0f};
+            boarder(2, pos);
+            nvgBeginPath(vg);
+            nvgRect(vg, SPLAT(pos));
+            nvgFillColor(vg, nvgRGBA(0x6, 0x27, 0x37, 255));
+            nvgFill(vg);
+        }
+        {
+            float pos[4] = {30.0f*i, 0.0f, 30.0f, 150.0f};
+            boarder(4, pos);
+            drawVZSlider(vg, SPLAT(pos));
+        }
+        {
+            float pos[4] = {30.0f*i, 200.0f, 30.0f, 90.0f};
+            boarder(4, pos);
+            drawVZSlider(vg, SPLAT(pos));
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
 void renderDial(NVGcontext *vg, dial_t dial)
