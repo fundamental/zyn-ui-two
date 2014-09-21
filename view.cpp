@@ -79,3 +79,19 @@ void viewReverb(NVGcontext *vg, int x, int y, int w, int h)
     float pos[4] = {(float)x,(float)y,(float)w,(float)h};
     mod.draw(pos);
 }
+
+void viewAmplitude(NVGcontext *vg, int x, int y, int w, int h)
+{
+    Module mod(vg, "AMPLITUDE");
+    mod.inner.pad_factor = 0.9;
+    mod.inner.add(new KnobDetail(vg), 1, 1.5, "VOL");
+    mod.inner.add(new KnobDetail(vg), 1, 1.5, "V.SNS");
+    mod.inner.add(new Knob(vg), 1, 1.5, "PAN");
+    mod.inner.add(new Button(vg, "STEREO"), 1.0/3, 1);
+    mod.inner.add(new Knob(vg), 1, 1, "P.STR.");
+    mod.inner.add(new Knob(vg), 1, 1, "P.T.");
+    mod.inner.add(new Knob(vg), 1, 1, "P.STC.");
+    mod.inner.add(new Knob(vg), 1, 1, "P.VEL.");
+    float pos[4] = {(float)x,(float)y,(float)w,(float)h};
+    mod.draw(pos);
+}

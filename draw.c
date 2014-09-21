@@ -167,7 +167,7 @@ void drawOptButton(NVGcontext *vg, const char *str, int x, int y, int w, int h)
 	nvgTextAlign(vg,NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);
 	nvgText(vg, x+w-h/2,y+h*0.5f,cpToUTF8(ICON_DOWN,icon), NULL);
 	
-    
+
     nvgFontSize(vg, h*0.6);
 	nvgFontFace(vg, "sans");
 	nvgFillColor(vg, nvgRGBA(0x22, 0x9b, 0xdb, 255));
@@ -375,6 +375,7 @@ void drawVZSlider(NVGcontext *vg, int x, int y, int w, int h)
 	nvgFillColor(vg, nvgRGBA(0x3a,0xc5,0xec,255));
     nvgFill(vg);
 }
+//------------------------------------------------------------------------------
 void drawOscArray(NVGcontext *vg, int x, int y, int w, int h)
 {
     for(int i=0; i<10; ++i)
@@ -401,6 +402,63 @@ void drawOscArray(NVGcontext *vg, int x, int y, int w, int h)
     }
 }
 
+
+//------------------------------------------------------------------------------
+
+void drawLogPlot(NVGcontext *vg, float *X, int x, int y, int w, int h)
+{
+    float dBmin = X[0];
+    float dBmax = X[1];
+    float fMin  = X[2];
+    float fMax  = X[3];
+
+    char dash[] = {5,5,0};
+    //Db grid is easy, it is just a linear spacing
+    for(int i=0; i<8; ++i) {
+        int level = y+h*i/8.0;
+        nvgBeginPath(vg);
+        //fl_line(x, level, x()+w(), level);
+    }
+
+
+    //The frequency grid is defined with points at
+    //10,11,12,...,18,19,20,30,40,50,60,70,80,90,100,200,400,...
+    //Thus we find each scale that we cover and draw the nine lines unique to
+    //that scale
+    const int min_base = log(fMin)/log(10);
+    const int max_base = log(fMax)/log(10);
+    const float b = log(fMin)/log(10);
+    const float a = log(fMax)/log(10)-b;
+    for(int i=min_base; i<=max_base; ++i) {
+        for(int j=1; j<10; ++j) {
+            const float freq = pow(10.0, i)*j;
+            const float xloc = (log(freq)/log(10)-b)/a;
+            if(xloc<1.0 && xloc > -0.001)
+                ;//fl_line(xloc*w()+x(), y(), xloc*w()+x(), y()+h());
+        }
+    }
+
+    ;//fl_end_line();
+
+    //Place the text labels
+    char label[1024];
+    for(int i=0; i<8; ++i) {
+        int level = y+h*i/8.0;
+        float value = (1-i/8.0)*(dBmax-dBmin) + dBmin;
+        sprintf(label, "%.2f dB", value);
+        ;//fl_draw(label, x+w, level);
+    }
+
+    for(int i=min_base; i<=max_base; ++i) {
+        {
+            const float freq = pow(10.0, i)*1;
+            const float xloc = (log(freq)/log(10)-b)/a;
+            sprintf(label, "%0.f Hz", freq);
+            if(xloc<1.0)
+                ;//fl_draw(label, xloc*w()+x()+10, y()+h());
+        }
+    }
+}
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 

@@ -33,6 +33,17 @@ struct Knob:public Widget
     }
 };
 
+struct KnobDetail:public Widget
+{
+    KnobDetail(NVGcontext *vg)
+        :Widget(vg) {}
+    virtual void draw(float *pos)
+    {
+        drawDial(vg, SPLAT(pos));
+        drawDialValue(vg, 27, SPLAT(pos));
+    }
+};
+
 struct DropDown:public Widget
 {
     DropDown(NVGcontext *vg, std::string text_)
