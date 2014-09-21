@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <GL/gl.h>
 #include "nanovg/nanovg.h"
-#define NANOVG_GL3_IMPLEMENTATION
+#define NANOVG_GL2_IMPLEMENTATION
 #include "nanovg/nanovg_gl.h"
 #include "draw.h"
 #include "view.h"
@@ -26,8 +26,8 @@ int main()
 
 	
     //Set OpenGL Revision
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 	
     //Create Window
 	window = glfwCreateWindow(1000, 600, "NanoVG", NULL, NULL);
@@ -48,7 +48,7 @@ int main()
         return -1;
     }
 
-    vg = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
+    vg = nvgCreateGL2(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
     nvgCreateFont(vg, "sans", "Roboto-Regular.ttf");
 	nvgCreateFont(vg, "icons", "entypo.ttf");
 	
@@ -106,7 +106,7 @@ int main()
 	}
 
 
-	nvgDeleteGL3(vg);
+	nvgDeleteGL2(vg);
 	glfwTerminate();
 	return 0;
 }
