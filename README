@@ -1,0 +1,9 @@
+Misc UI Draw/Layout Routines For Replacement UI of ZynAddSubFX.
+This code assumes an OpenGL 2.0 Compatiable Device and it makes use of nanovg
+for virtually all drawing.
+Once the Draw/Layout Routines are pretty much all functional, the actual logic
+of the UI will likely end up implemented in QML, though nothing is set in stone.
+Any contributions are very much appreciated.
+Please see
+http://budislavtvp.deviantart.com/art/ZynAddSubFX-UI-Concept-2014-455890191
+For the UI mockup which this work is based off of.
