@@ -42,14 +42,15 @@ void loadViewData(void)
             node["class"]  |= node["name"];
             node["scale"]  |= 1.0;
             node["aspect"] |= 1.0;
+            names[node["name"].as<string>()] = node;
         }
-        names[node["name"].as<string>()] = node;
     }
 }
 
 template<class T>
 Widget *Spawn(NVGcontext *vg, Properties &p)
 {
+    p["label"] |= "";
     return new T(vg, p);
 }
 
@@ -88,25 +89,42 @@ YAML::Node FindModule(string mod)
     size_t elms = config.size();
     for(unsigned i=0; i<elms; ++i) {
         auto node = config[i]["Def"];
-        if(node["name"].as<string>() == mod)
+        if(node.IsDefined() && node["name"].as<string>() == mod)
             return node;
     }
     throw std::invalid_argument("Unknown module '"+mod+"'");
 }
 
+string getKey(YAML::Node n)
+{
+    for(auto x:n)
+        return x.first.as<string>();
+    throw std::invalid_argument("EMPTY MAP");
+}
+
 
 Module *Generate(const char *mod, NVGcontext *vg)
 {
-    loadViewData();
-    auto node = FindModule(mod);
-    Module *module = new Module(vg, node);
-    if(node["children"]) {
-        for(auto x:node["children"]) {
-            printf("Inserting Child\n");
-            auto    props = x.second;
-            Widget *child = SpawnByName(X{x.first}, vg, props);
-            module->inner.add(child, F{props["aspect"]}, F{props["scale"]});
+    try {
+        loadViewData();
+        auto node = FindModule(mod);
+        Module *module = new Module(vg, node);
+        auto n = node["children"];
+        if(n) {
+            for(auto itr=n.begin(); itr != n.end(); ++itr) {
+                if(!itr->IsDefined() || itr->Type() != YAML::NodeType::Map)
+                    continue;
+                string widgetType = getKey(*itr);
+                auto    name  = widgetType;
+                auto    props = (*itr)[widgetType];
+                Widget *child = SpawnByName(name, vg, props);
+                module->inner.add(child, F{props["aspect"]}, F{props["scale"]},X{props["label"]});
+            }
         }
+        return module;
+    } catch(std::exception e)
+    {
+        std::cout << e.what() << std::endl;
+        return NULL;
     }
-    return module;
 }

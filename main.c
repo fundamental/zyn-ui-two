@@ -81,7 +81,7 @@ int main()
 		nvgBeginFrame(vg, winWidth, winHeight, pxRatio);
 
         //viewReverb(vg, 0,0, winWidth, winHeight);
-        viewAmplitude(vg, 0,0,winWidth, winHeight);
+        viewAmplitude2(vg, 0,0,winWidth, winHeight);
         //viewLFO(vg, 0,0, winWidth, winHeight);
         //viewFilterEnv(vg, 0,0, winWidth, winHeight);
                        //y   x    y   x     y    x    y   x   y   x

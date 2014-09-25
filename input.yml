@@ -4,6 +4,7 @@
 
 - Widget: {name: SmallKnob, class: Knob}
 - Widget: {name: Knob,      scale: 1.5}
+- Widget: {name: KnobDetail,scale: 1.5}
 - Widget: {name: DropDown,  aspect: 0.33}
 - Widget: {name: Button}
 

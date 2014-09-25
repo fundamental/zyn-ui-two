@@ -1,4 +1,4 @@
-ui: main.c draw.h draw.c layout.h layout.cpp view.cpp view.h
+ui: main.c draw.h draw.c layout.h layout.cpp view.cpp view.h factory.cpp
 	gcc -std=gnu99 -g main.c -c
 	gcc -std=gnu99 -g draw.c -c
 	g++ -std=c++11 -g view.cpp -c
