@@ -8,6 +8,7 @@ void viewFilterEnv(NVGcontext *vg, int x, int y, int w, int h);
 void viewReverb(NVGcontext *vg, int x, int y, int w, int h);
 void viewAmplitude(NVGcontext *vg, int x, int y, int w, int h);
 void viewAmplitude2(NVGcontext *vg, int x, int y, int w, int h);
+void viewModule(NVGcontext *vg, const char *module, int x, int y, int w, int h);
 #ifdef __cplusplus
 }
 #endif

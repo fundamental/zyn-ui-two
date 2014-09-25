@@ -102,6 +102,14 @@ void viewAmplitude(NVGcontext *vg, int x, int y, int w, int h)
 
 Module *Generate(const char *, NVGcontext *);
 
+void viewModule(NVGcontext *vg, const char *module, int x, int y, int w, int h)
+{
+    Module *mod = Generate(module, vg);
+    float pos[4] = {(float)x,(float)y,(float)w,(float)h};
+    if(mod)
+        mod->draw(pos);
+}
+
 void viewAmplitude2(NVGcontext *vg, int x, int y, int w, int h)
 {
     Module *mod = Generate("amplitude", vg);

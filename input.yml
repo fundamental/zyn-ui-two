@@ -2,10 +2,11 @@
 #                               WIDGET DEFINITIONS                             #
 ################################################################################
 
-- Widget: {name: SmallKnob, class: Knob}
-- Widget: {name: Knob,      scale: 1.5}
-- Widget: {name: KnobDetail,scale: 1.5}
-- Widget: {name: DropDown,  aspect: 0.33}
+- Widget: {name: SmallKnob,  class: Knob}
+- Widget: {name: Knob,       scale: 1.5}
+- Widget: {name: KnobDetail, scale: 1.5}
+- Widget: {name: DropDown,   aspect: 0.33}
+- Widget: {name: SmallDropDown, class: DropDown,  aspect: 0.6}
 - Widget: {name: Button}
 
 
@@ -89,6 +90,95 @@
         - SmallKnob: {uri: punch.vel,  label: p.vel.}
 
 - Def:
-    name: analog filter
-    label: afilter
+    name: afilter
+    label: analog filter
     container: Module
+    children:
+        - Knob: {label: c.freq}
+        - Knob: {label: Q}
+        - Knob: {label: v.sns.a.}
+        - Knob: {label: v.sns.}
+        - Knob: {label: freq.tr}
+        - SmallKnob: {label: gain}
+        - SmallDropDown: {label: ST, text: 2x}
+        - DropDown: {label: category, text: analog}
+        - DropDown: {label: f.type, text: lpf2}
+
+- Def:
+    name: filterenv
+    label: filter envelope
+    container: Module
+    children:
+        - Knob: {label: a.val}
+        - Knob: {label: a.dt}
+        - Knob: {label: d.val}
+        - Knob: {label: d.dt}
+        - Knob: {label: r.val}
+        - Knob: {label: r.dt}
+        - SmallKnob: {label: stretch}
+        - Button: {label: frcr}
+
+- Def:
+    name: ampenv
+    label: amplitude envelope
+    container: Module
+    children:
+        - Knob: {label: a.val}
+        - Knob: {label: a.dt}
+        - Knob: {label: s.val}
+        - Knob: {label: r.dt}
+        - SmallKnob: {label: stretch}
+        - Button: {label: frcr}
+        - Button: {label: L}
+
+- Def:
+    name: echo
+    label: Echo
+    container: Module
+    children:
+        - DropDown: {uri: preset, label: preset, text: foo}
+        - Spacer: {}
+        - Knob: {uri: wet,       label: d/w}
+        - Knob: {uri: panning,   label: pan}
+        - Knob: {uri: delay,     label: delay}
+        - Knob: {uri: lrdelay,   label: l.rdl.}
+        - Knob: {uri: crossover, label: l.rcb}
+        - Knob: {uri: feedback,  label: fb}
+        - Knob: {uri: damp,      label: damp}
+
+- Def:
+    name: distortion
+    label: Distortion
+    container: Module
+    children:
+        - DropDown: {uri: preset, label: preset, text: overdrive 1}
+        - DropDown: {uri: type, label: type, text: atan}
+        - Button:   {uri: invert, label: neg.}
+        - Spacer: {}
+        - Knob: {uri: wet,       label: d/w}
+        - Knob: {uri: panning,   label: pan}
+        - Knob: {uri: delay,     label: delay}
+        - Knob: {uri: drive,     label: drive}
+        - Knob: {uri: level,     label: level}
+        - Knob: {uri: lpf,       label: lpf}
+        - Knob: {uri: hpf,       label: hpf}
+        - Button: {uri: pf,      label: pf}
+        - Button: {uri: stereo,  label: st}
+
+- Def:
+    name: dfilter
+    label: dynamic filter
+    container: Module
+    children:
+        - DropDown: {uri: preset, label: preset, text: vocal morph 1}
+        - DropDown: {uri: lfo, label: lfo, text: sin}
+        - Spacer: {}
+        - Knob: {uri: wet,       label: d/w}
+        - Knob: {uri: panning,   label: pan}
+        - Knob: {uri: freq,      label: freq}
+        - Knob: {uri: xxx,       label: st.df}
+        - Knob: {uri: drive,     label: rnd}
+        - Knob: {uri: lfodepth,  label: lfo d}
+        - Knob: {uri: xxx,       label: a.s.}
+        - Knob: {uri: xxx,       label: a.m.}
+        - Button: {uri: inv,      label: a.inv}

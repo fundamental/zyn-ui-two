@@ -1,5 +1,6 @@
 #include <vector>
 #include <string>
+#include <algorithm>
 #include <yaml-cpp/yaml.h>
 #include "nanovg/nanovg.h"
 #include "layout.h"
@@ -101,6 +102,8 @@ struct Group:public Parent
 
     void add(Widget *w, float aspect, float weight, string label="")
     {
+        for(int i=0; i<(int)label.size();++i)
+            label[i] = std::toupper(label[i]);
         children.push_back(w);
         labels.push_back(label);
         layoutBoundBox(layout, aspect, weight);

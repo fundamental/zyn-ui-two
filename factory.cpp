@@ -48,10 +48,17 @@ void loadViewData(void)
 }
 
 template<class T>
-Widget *Spawn(NVGcontext *vg, Properties &p)
+T *Spawn(NVGcontext *vg, Properties &p)
 {
     p["label"] |= "";
     return new T(vg, p);
+}
+
+template<>
+DropDown *Spawn(NVGcontext *vg, Properties &p)
+{
+    p["text"] |= "";
+    return new DropDown(vg, p);
 }
 
 string nameRemap(string name, Properties &p)
@@ -117,14 +124,20 @@ Module *Generate(const char *mod, NVGcontext *vg)
                 string widgetType = getKey(*itr);
                 auto    name  = widgetType;
                 auto    props = (*itr)[widgetType];
-                Widget *child = SpawnByName(name, vg, props);
-                module->inner.add(child, F{props["aspect"]}, F{props["scale"]},X{props["label"]});
+                if(name == "Spacer")
+                    layoutDummyBox(module->inner.layout);
+                else {
+                    Widget *child = SpawnByName(name, vg, props);
+                    module->inner.add(child, F{props["aspect"]}, F{props["scale"]},X{props["label"]});
+                }
             }
         }
         return module;
-    } catch(std::exception e)
-    {
+    } catch(std::invalid_argument e) {
         std::cout << e.what() << std::endl;
+        return NULL;
+    } catch(std::exception e) {
+        std::cout << "Malformed YAML" << std::endl;
         return NULL;
     }
 }
