@@ -4,7 +4,8 @@ ui: main.c draw.h draw.c layout.h layout.cpp view.cpp view.h
 	g++ -std=c++11 -g view.cpp -c
 	gcc -std=gnu99 -g nanovg/*.c -c
 	g++ -std=c++11 -g layout.cpp -fPIC -fno-rtti -c
-	g++ view.o nanovg.o draw.o main.o layout.o -o ui -lm -lGL -lglfw -lGLEW -g
+	g++ -std=c++11 -g factory.cpp -fPIC -fno-rtti -c
+	g++ view.o nanovg.o draw.o main.o layout.o factory.o -o ui -lm -lGL -lglfw -lGLEW -lyaml-cpp -g
 
 clean:
 	rm -f *.o

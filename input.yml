@@ -1,0 +1,93 @@
+################################################################################
+#                               WIDGET DEFINITIONS                             #
+################################################################################
+
+- Widget: {name: SmallKnob, class: Knob}
+- Widget: {name: Knob,      scale: 1.5}
+- Widget: {name: DropDown,  aspect: 0.33}
+- Widget: {name: Button}
+
+
+
+################################################################################
+#                                VIEWS OF MODULES                              #
+################################################################################
+
+
+#LFO
+- Def:
+    name:  amplfo
+    label: amplitude lfo
+    uri:   "AMPLfo"
+    container: Module
+    copyable: true
+    children: &lfo_children
+        - Knob: {uri: Pfreq,       label: freq.}
+        - Knob: {uri: Pstart,      label: start}
+        - Knob: {uri: Pdelay,      label: delay}
+        - Knob: {uri: Pstrength,   label: str.}
+        - SmallKnob: {uri: PAmpRand,    label: A.R.}
+        - SmallKnob: {uri: PFreqRand,   label: F.R.}
+        - DropDown: {uri: Ptype,   label: type}
+        - Button: {uri: continous, name: C} 
+
+- Def:
+    name:  freqlfo
+    label: frequency lfo
+    uri:   "FREQLfo"
+    container: Module
+    copyable: true
+    children: 
+        <<: *lfo_children
+
+- Def:
+    name:  filterlfo
+    label: filter lfo
+    uri:   "FilterLfo"
+    copyable: true
+    children:
+        <<: *lfo_children
+
+#Envelope
+
+#Effects
+- Def:
+    name: reverb
+    label: reverb
+    uri:   reverb
+    container: Module
+    copyable: true
+    children:
+        - DropDown: {uri: preset}
+        - DropDown: {uri: type}
+        - Spacer: {}
+        - Knob: {uri: rs,      label: r.s}
+        - Knob: {uri: wet,     label: d/w}
+        - Knob: {uri: panning, label: pan}
+        - Knob: {uri: time,    label: time}
+        - Knob: {uri: idelay,  label: i.del}
+        - Knob: {uri: delayfb, label: i.delfb}
+        - Knob: {uri: lpf,     label: lpf}
+        - Knob: {uri: hpf,     label: hpf}
+        - Knob: {uri: damp,    label: damp}
+        - Knob: {uri: bw,      label: bw}
+
+#Global Synth Parameters
+- Def:
+    name: amplitude
+    label: amplitude
+    container: Module
+    children:
+        - KnobDetail: {uri: vol, label: vol}
+        - KnobDetail: {uri: v.sns, label: v.sns}
+        - Knob: {uri: panning,  label: pan}
+        - Button: {uri: stereo, label: stereo}
+        - SmallKnob: {uri: punch.strength, label: p.str.}
+        - SmallKnob: {uri: punch.time, label: p.t.}
+        - SmallKnob: {uri: punch.stc,  label: p.stc.}
+        - SmallKnob: {uri: punch.vel,  label: p.vel.}
+
+- Def:
+    name: analog filter
+    label: afilter
+    container: Module

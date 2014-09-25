@@ -1,10 +1,13 @@
 #include <vector>
 #include <string>
+#include <yaml-cpp/yaml.h>
 #include "nanovg/nanovg.h"
 #include "layout.h"
 #include "draw.h"
 using std::string;
 using std::vector;
+
+typedef YAML::Node Properties;
 
 struct Widget
 {
@@ -25,7 +28,7 @@ struct Parent:public Widget
 
 struct Knob:public Widget
 {
-    Knob(NVGcontext *vg)
+    Knob(NVGcontext *vg, Properties &)
         :Widget(vg) {}
     virtual void draw(float *pos)
     {
@@ -35,7 +38,7 @@ struct Knob:public Widget
 
 struct KnobDetail:public Widget
 {
-    KnobDetail(NVGcontext *vg)
+    KnobDetail(NVGcontext *vg, Properties &)
         :Widget(vg) {}
     virtual void draw(float *pos)
     {
@@ -46,8 +49,9 @@ struct KnobDetail:public Widget
 
 struct DropDown:public Widget
 {
-    DropDown(NVGcontext *vg, std::string text_)
-        :Widget(vg), text(text_) {}
+    DropDown(NVGcontext *vg, Properties &p)
+        :Widget(vg), text(p["text"].as<string>()) 
+    {}
     virtual void draw(float*pos)
     {
         drawOptButton(vg, text.c_str(), SPLAT(pos));
@@ -58,8 +62,8 @@ struct DropDown:public Widget
 
 struct Button:public Widget
 {
-    Button(NVGcontext *vg, string label_)
-        :Widget(vg), label(label_) {}
+    Button(NVGcontext *vg, Properties &p)
+        :Widget(vg), label(p["label"].as<string>()) {}
     virtual void draw(float *pos)
     {
         drawButton(vg, label.c_str(), SPLAT(pos));
@@ -110,8 +114,8 @@ struct Group:public Parent
 struct Module:public Parent
 {
     string label;
-    Module(NVGcontext *vg, string label_)
-        :Parent(vg), inner(vg), upper(vg), label(label_)
+    Module(NVGcontext *vg, Properties &p)
+        :Parent(vg), inner(vg), upper(vg), label(p["label"].as<string>())
     {
         layoutDummyBox(upper.layout);
     }
