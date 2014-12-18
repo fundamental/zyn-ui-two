@@ -33,7 +33,7 @@ struct Knob:public Widget
         :Widget(vg) {}
     virtual void draw(float *pos)
     {
-        drawAltDial(vg, SPLAT(pos));
+        drawAltDial(vg, 0.2, SPLAT(pos));
     }
 };
 

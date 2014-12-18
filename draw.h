@@ -21,7 +21,7 @@ void drawOptButton(NVGcontext *vg, const char *str, int x, int y, int w, int h);
 void drawButtonGrid(NVGcontext *vg, int n, int m, int x, int y, int w, int h);
 void drawGrid(NVGcontext *vg, int n, int m, int x, int y, int w, int h);
 void drawSin(NVGcontext *vg, int x, int y, int w, int h);
-void drawAltDial(NVGcontext *vg, int x, int y, int w, int h);
+void drawAltDial(NVGcontext *vg, float val, int x, int y, int w, int h);
 void drawEnvEdit(NVGcontext *vg, float *dat, int n, int m, int x, int y, int w, int h);
 void drawHZSlider(NVGcontext *vg, int x, int y, int w, int h);
 void drawVZSlider(NVGcontext *vg, int x, int y, int w, int h);

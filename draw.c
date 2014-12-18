@@ -237,7 +237,7 @@ void drawSin(NVGcontext *vg, int x, int y, int w, int h)
     nvgStroke(vg);
 }
 //------------------------------------------------------------------------------
-void drawAltDial(NVGcontext *vg, int x, int y, int w, int h)
+void drawAltDial(NVGcontext *vg, float val, int x, int y, int w, int h)
 {
     float start = M_PI/4;
     float end   = M_PI*3.0/4.0;
@@ -252,7 +252,7 @@ void drawAltDial(NVGcontext *vg, int x, int y, int w, int h)
 	nvgFill(vg);
 	
 
-    const float len = (3.0/2.0*M_PI)*0.3;
+    const float len = (3.0/2.0*M_PI)*val;//0.3;
     float startt = end + len;
 
     nvgBeginPath(vg);

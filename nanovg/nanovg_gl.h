@@ -352,6 +352,7 @@ static int glnvg__createShader(GLNVGshader* shader, const char* name, const char
 	memset(shader, 0, sizeof(*shader));
 
 	prog = glCreateProgram();
+    printf("glCreateProgram = %d\n", prog);
 	vert = glCreateShader(GL_VERTEX_SHADER);
 	frag = glCreateShader(GL_FRAGMENT_SHADER);
 	str[2] = vshader;
@@ -1016,6 +1017,7 @@ static void glnvg__renderCancel(void* uptr) {
 
 static void glnvg__renderFlush(void* uptr)
 {
+    printf("Calling render flush...\n");
 	GLNVGcontext* gl = (GLNVGcontext*)uptr;
 	int i;
 
