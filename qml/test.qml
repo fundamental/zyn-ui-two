@@ -1,5 +1,5 @@
 import QtQuick 1.0
-import MDEPlugins 1.0
+import ZynAddSubFX 1.0
 import "qrc:/qml/"
 
 
@@ -16,7 +16,7 @@ Rectangle {
             width: 100
             height: 100
         }
-        Knob {
+        Graph {
             width: 100
             height: 100
         }

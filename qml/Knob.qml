@@ -1,8 +1,8 @@
 import QtQuick 1.0
-import MDEPlugins 1.0
+import ZynAddSubFX 1.0
 
 
-MDE {
+Knob {
     id: knob
     height: 100
     width:  100
