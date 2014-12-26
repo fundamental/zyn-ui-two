@@ -1,0 +1,9 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/">
+        <file>qml/test.qml</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>qml/Knob.qml</file>
+    </qresource>
+</RCC>

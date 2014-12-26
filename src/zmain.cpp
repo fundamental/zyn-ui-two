@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     view.setViewport(glWidget);
     view.setResizeMode(QDeclarativeView::SizeRootObjectToView);
     //view.setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    view.setSource(QUrl::fromLocalFile("test.qml"));
+    view.setSource(QUrl("qrc:/qml/test.qml"));
     view.show();
     //GLWidget gl(format);
     //gl.show();

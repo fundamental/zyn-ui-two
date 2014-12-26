@@ -1,6 +1,6 @@
 import QtQuick 1.0
 import MDEPlugins 1.0
-import "qml/"
+import "qrc:/qml/"
 
 
 
