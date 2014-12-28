@@ -1,6 +1,6 @@
 import ZynAddSubFX 1.0
 
-
-Graph {
+Button {
     id: graph
 }
+

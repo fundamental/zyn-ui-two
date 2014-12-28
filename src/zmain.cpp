@@ -7,10 +7,11 @@
 #include "../nanovg/nanovg.h"
 #define NANOVG_GL2_IMPLEMENTATION
 #include "../nanovg/nanovg_gl.h"
-#include "zKnob.h"
 #include <QGuiApplication>
 #include <QtQuick/QQuickView>
+#include "zKnob.h"
 #include "zGraph.h"
+#include "zButton.h"
 
 
 NVGcontext *initVG()
@@ -26,8 +27,8 @@ NVGcontext *initVG()
         }
         printf("Initializing NanoVG...\n");
         vg = nvgCreateGL2(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
-        nvgCreateFont(vg, "sans", "Roboto-Regular.ttf");
-        nvgCreateFont(vg, "icons", "entypo.ttf");
+        nvgCreateFont(vg, "sans", "../Roboto-Regular.ttf");
+        nvgCreateFont(vg, "icons", "../entypo.ttf");
     }
     return vg;
 }
@@ -38,6 +39,8 @@ int main(int argc, char *argv[])
 
     qmlRegisterType<zKnob>("ZynAddSubFX", 1, 0, "Knob");
     qmlRegisterType<zGraph>("ZynAddSubFX", 1, 0, "Graph");
+    qmlRegisterType<zButton>("ZynAddSubFX", 1, 0, "Button");
+
     QQuickView view;
     view.setResizeMode(QQuickView::SizeRootObjectToView);
     view.setSource(QUrl("qrc:/qml/test.qml"));

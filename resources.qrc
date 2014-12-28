@@ -2,6 +2,7 @@
 <RCC version="1.0">
     <qresource prefix="/">
         <file>qml/test.qml</file>
+        <file>qml/Button.qml</file>
         <file>qml/Knob.qml</file>
         <file>qml/Graph.qml</file>
     </qresource>

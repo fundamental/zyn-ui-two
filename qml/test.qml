@@ -8,15 +8,15 @@ RowLayout {
     id: layout
     anchors.fill: parent
     spacing: 6
+    Knob {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+    }
     Graph {
         Layout.fillWidth: true
         Layout.fillHeight: true
     }
-    Knob {
-        Layout.fillWidth: true
-        Layout.fillHeight: true
-    }
-    Knob {
+    Button {
         Layout.fillWidth: true
         Layout.fillHeight: true
     }
