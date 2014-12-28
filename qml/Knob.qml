@@ -1,31 +1,29 @@
-import QtQuick 1.0
+import QtQuick 2.0
 import ZynAddSubFX 1.0
 
 
 Knob {
     id: knob
-    height: 100
-    width:  100
+    property real aspect: 1
     function releaseSwitch()
     {
         console.log("move...", mouse.mouseY)
     }
     function updateValue(norm_dy)
     {
-        var tmp = knob.value - norm_dy
+        var tmp = knob.t - norm_dy
         if(tmp > 1) {
             tmp = 1
         } else if(tmp < 0) {
             tmp = 0
         }
-        knob.value = tmp
+        knob.t = tmp
     }
     MouseArea {
         id: mouse
         drag.axis: Drag.YAxis;
         drag.minimumX: 1;
         drag.maximumX: 78
-        onClicked: toggle()
         anchors.fill: parent
         property variant previousPosition        
         onPressed: {

@@ -1,21 +1,19 @@
 #pragma once
-#include <QtDeclarative/QDeclarativeItem>
-#include <QtOpenGL/QGLWidget>
+#include <QtQuick/QQuickItem>
  
-class zGraph : public QDeclarativeItem
+class zGraph : public QQuickItem
 {
     Q_OBJECT
-    Q_PROPERTY(float value READ value WRITE setValue)
+    Q_PROPERTY(qreal value MEMBER m_value)
  
     public:
-        zGraph(QDeclarativeItem *parent = 0);
-        void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-                QWidget *widget = 0);
-        void  mouseMoveEvent (QGraphicsSceneMouseEvent *event) override;
-        bool sceneEvent(QEvent *event) override;
-        float value() const {return m_value;}
-        void  setValue(float v) {m_value=v;
-        this->update(boundingRect());}
+        zGraph();
+    public slots:
+        void paint();
+        void handleWindowChanged(class QQuickWindow *win);
+        //float value() const {return m_value;}
+        //void  setValue(float v) {m_value=v;
+        //this->update(boundingRect());}
 
     private:
         float m_value;

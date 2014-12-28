@@ -1,36 +1,23 @@
-import QtQuick 1.0
+import QtQuick 2.0
 import ZynAddSubFX 1.0
+import QtQuick.Layouts 1.1
 import "qrc:/qml/"
 
 
-
-Rectangle {
-    color: 'black'
-    width: 400
-    height: 100
-    Row {
-        id: positioner
-        width:400
-        height:100
-        Knob {
-            width: 100
-            height: 100
-        }
-        Graph {
-            width: 100
-            height: 100
-        }
-        Knob {
-            width: 100
-            height: 100
-        }
-        Knob {
-            width: 100
-            height: 100
-        }
-        Knob {
-            width: 100
-            height: 100
-        }
+RowLayout {
+    id: layout
+    anchors.fill: parent
+    spacing: 6
+    Graph {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+    }
+    Knob {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+    }
+    Knob {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
     }
 }

@@ -1,22 +1,24 @@
 #pragma once
-#include <QtDeclarative/QDeclarativeItem>
-#include <QtOpenGL/QGLWidget>
- 
-class zKnob : public QDeclarativeItem
+#include <QtQuick/QQuickItem>
+
+class zKnob:public QQuickItem
 {
     Q_OBJECT
-    Q_PROPERTY(float value READ value WRITE setValue)
- 
-    public:
-        zKnob(QDeclarativeItem *parent = 0);
-        void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-                QWidget *widget = 0);
-        void  mouseMoveEvent (QGraphicsSceneMouseEvent *event) override;
-        bool sceneEvent(QEvent *event) override;
-        float value() const {return m_value;}
-        void  setValue(float v) {m_value=v;
-        this->update(boundingRect());}
+    Q_PROPERTY(qreal t READ t WRITE setT NOTIFY tChanged)
 
-    private:
-        float m_value;
+public:
+    zKnob();
+
+    qreal t() const { return m_t; }
+    void setT(qreal t);
+
+signals:
+    void tChanged();
+
+public slots:
+    void paint();
+    void handleWindowChanged(QQuickWindow *win);
+
+private:
+    qreal m_t;
 };
