@@ -446,6 +446,30 @@ void drawEqGrid(NVGcontext *vg, float *dat, int n, int x, int y, int w, int h)
     nvgStrokeWidth(vg, 1);
 }
 //------------------------------------------------------------------------------
+void drawHarmonicPlot(NVGcontext *vg, float *dat, int n, int x, int y, int w, int h)
+{
+    nvgBeginPath(vg);
+    nvgRect(vg, x,y,w,h);
+	nvgFillColor(vg, nvgRGBA(0x0d,0x0d,0x0d,255));
+    nvgStrokeColor(vg, nvgRGBA(0x01, 0x47, 0x67,255));
+    nvgFill(vg);
+    nvgStroke(vg);
+
+    float width = w*0.8/n;
+
+    //Draw Actual Spikes
+    for(int i=0; i<n; ++i) {
+        float dx = w*(i*1.0/(n-1));
+        nvgBeginPath(vg);
+        nvgMoveTo(vg, x+dx, y+h);
+        nvgLineTo(vg, x+dx, y+(h-h*dat[i]));
+        nvgStrokeWidth(vg, width);
+        nvgStrokeColor(vg, nvgRGBA(0x11,0x45,0x75,255));
+        nvgStroke(vg);
+    }
+    nvgStrokeWidth(vg, 1);
+}
+//------------------------------------------------------------------------------
 void drawHZSlider(NVGcontext *vg, int x, int y, int w, int h)
 {
     nvgBeginPath(vg);
