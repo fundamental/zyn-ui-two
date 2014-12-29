@@ -1017,7 +1017,6 @@ static void glnvg__renderCancel(void* uptr) {
 
 static void glnvg__renderFlush(void* uptr)
 {
-    printf("Calling render flush...\n");
 	GLNVGcontext* gl = (GLNVGcontext*)uptr;
 	int i;
 
