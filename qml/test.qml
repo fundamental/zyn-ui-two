@@ -20,4 +20,8 @@ RowLayout {
         Layout.fillWidth: true
         Layout.fillHeight: true
     }
+    EnvView {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+    }
 }
