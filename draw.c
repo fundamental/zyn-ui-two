@@ -339,6 +339,113 @@ void drawEnvEdit(NVGcontext *vg, float *dat, int n, int m, int x, int y, int w, 
 
 }
 //------------------------------------------------------------------------------
+void drawLinx(NVGcontext *vg, float xmin, float xmax, float x, float y, float w, float h)
+{
+    //1,2,3,4,5,6,7,8,9,10,20
+    for(int xx=xmin; xx<=(int)xmax; ++xx) {
+        float base = (xx-xmin)/(xmax-xmin);
+        //for(int shift=0; shift<10; ++shift) {
+            //float delta = log10((shift+1)*1.0)/(xmax_-xmin_);
+        float dy = h*base;
+        if(dy < 0 || dy > h)
+            continue;
+        nvgBeginPath(vg);
+        nvgMoveTo(vg, x,   y+dy);
+        nvgLineTo(vg, x+w, y+dy);
+        nvgStrokeColor(vg, nvgRGBA(0x01, 0x47, 0x67,255));
+        nvgStroke(vg);
+    }
+}
+//------------------------------------------------------------------------------
+void drawLogx(NVGcontext *vg, float xmin, float xmax, float x, float y, float w, float h)
+{
+    float xmin_ = logf(xmin),
+          xmax_ = logf(xmax);
+    //1,2,3,4,5,6,7,8,9,10,20
+    for(int xx=xmin_; xx<=(int)xmax_; ++xx) {
+        float base = (xx-xmin_)/(xmax_-xmin_);
+        for(int shift=0; shift<10; ++shift) {
+            float delta = log10((shift+1)*1.0)/(xmax_-xmin_);
+            float dy = h*(base+delta);
+            if(dy < 0 || dy > h)
+                continue;
+            nvgBeginPath(vg);
+            nvgMoveTo(vg, x,   y+dy);
+            nvgLineTo(vg, x+w, y+dy);
+            nvgStrokeColor(vg, nvgRGBA(0x01, 0x47, 0x67,255));
+            nvgStroke(vg);
+        }
+    }
+}
+//------------------------------------------------------------------------------
+void drawLogy(NVGcontext *vg, float ymin, float ymax, float x, float y, float w, float h)
+{
+    float ymin_ = logf(ymin),
+          ymax_ = logf(ymax);
+    for(int yy=ymin_; yy<=(int)ymax_; ++yy) {
+        float base = (yy-ymin_)/(ymax_-ymin_);
+        for(int shift=0; shift<10; ++shift) {
+            float delta = log10((shift+1)*1.0)/(ymax_-ymin_);
+            float dx = w*(base+delta);
+            if(dx < 0 || dx > w)
+                continue;
+            nvgBeginPath(vg);
+            nvgMoveTo(vg, x+dx, y);
+            nvgLineTo(vg, x+dx, y+h);
+            nvgStrokeColor(vg, nvgRGBA(0x01, 0x47, 0x67,255));
+            nvgStroke(vg);
+        }
+    }
+}
+//------------------------------------------------------------------------------
+void drawLogLogGrid(NVGcontext *vg, float xmin, float xmax, float ymin, float ymax, float x, float y, float w, float h)
+{
+    drawLogy(vg,xmin,xmax,x,y,w,h);
+    drawLogy(vg,ymin,ymax,x,y,w,h);
+}
+//------------------------------------------------------------------------------
+void drawSemiLogy(NVGcontext *vg, float xmin, float xmax, float ymin, float ymax, float x, float y, float w, float h)
+{
+    drawLinx(vg,xmin,xmax,x,y,w,h);
+    drawLogy(vg,ymin,ymax,x,y,w,h);
+}
+//------------------------------------------------------------------------------
+void drawEqGrid(NVGcontext *vg, float *dat, int n, int x, int y, int w, int h)
+{
+    nvgBeginPath(vg);
+    nvgRect(vg, x,y,w,h);
+	nvgFillColor(vg, nvgRGBA(0x0d,0x0d,0x0d,255));
+    nvgStrokeColor(vg, nvgRGBA(0x01, 0x47, 0x67,255));
+    nvgFill(vg);
+    nvgStroke(vg);
+
+    drawSemiLogy(vg, 10,60,2,5000,x,y,w,h);
+
+    //Draw UnderLine
+    nvgBeginPath(vg);
+    nvgMoveTo(vg, x,y+h);
+    for(int i=0; i<n; ++i) {
+        float dx = w*(i*1.0/(n-1));
+        nvgLineTo(vg, x+dx, y+h/2-h/2*dat[i]);
+    }
+    nvgLineTo(vg, x+w, y+h);
+    nvgClosePath(vg);
+	nvgFillColor(vg, nvgRGBA(0x11,0x45,0x75,100));
+    nvgFill(vg);
+
+    //Draw Actual Line
+    nvgBeginPath(vg);
+    nvgMoveTo(vg, x+w*dat[1], y+h-h*dat[0]);
+    for(int i=0; i<n; ++i) {
+        float dx = w*(i*1.0/(n-1));
+        nvgLineTo(vg, x+dx, y+h/2-h/2*dat[i]);
+    }
+    nvgStrokeWidth(vg, 4);
+	nvgStrokeColor(vg, nvgRGBA(0x11,0x45,0x75,255));
+    nvgStroke(vg);
+    nvgStrokeWidth(vg, 1);
+}
+//------------------------------------------------------------------------------
 void drawHZSlider(NVGcontext *vg, int x, int y, int w, int h)
 {
     nvgBeginPath(vg);

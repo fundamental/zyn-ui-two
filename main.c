@@ -121,13 +121,16 @@ int main()
 
 #define M_PI 3.14159
         nvgBeginFrame(vg, winWidth, winHeight, pxRatio);
-	nvgBeginPath(vg);
-    float cx = 30.0, cy = 30.0, h = 80;
-    nvgArc(vg, cx, cy, 0.4*h, 0, 1.0/2.0*M_PI, 1);
-    nvgArc(vg, cx, cy, 0.2*h, 1.0/2.0*M_PI, 0, 2);
-    nvgClosePath(vg);
-	nvgFillColor(vg, nvgRGBA(0x11,0x45,0x75,255));
-	nvgFill(vg);
+        float in[10] = {0.0, 0.0, 0.5, 0.2, 0.3, 0.7,-0.9,0.8,0.0,1.0};
+        drawEqGrid(vg, in, 10, 0,0,winWidth, winHeight);
+
+	//nvgBeginPath(vg);
+    //float cx = 30.0, cy = 30.0, h = 80;
+    //nvgArc(vg, cx, cy, 0.4*h, 0, 1.0/2.0*M_PI, 1);
+    //nvgArc(vg, cx, cy, 0.2*h, 1.0/2.0*M_PI, 0, 2);
+    //nvgClosePath(vg);
+	//nvgFillColor(vg, nvgRGBA(0x11,0x45,0x75,255));
+	//nvgFill(vg);
     nvgEndFrame(vg);
 //		nvgBeginFrame(vg, winWidth, winHeight, pxRatio);
 //
