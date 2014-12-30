@@ -13,6 +13,9 @@
 #include "zGraph.h"
 #include "zButton.h"
 #include "zEnvView.h"
+#include "zVSlider.h"
+#include "zHSlider.h"
+#include "zDropDown.h"
 
 
 NVGcontext *initVG()
@@ -42,6 +45,9 @@ int main(int argc, char *argv[])
     qmlRegisterType<zGraph>("ZynAddSubFX", 1, 0, "Graph");
     qmlRegisterType<zButton>("ZynAddSubFX", 1, 0, "Button");
     qmlRegisterType<zEnvView>("ZynAddSubFX", 1, 0, "EnvView");
+    qmlRegisterType<zVSlider>("ZynAddSubFX", 1, 0, "VSlider");
+    qmlRegisterType<zHSlider>("ZynAddSubFX", 1, 0, "HSlider");
+    qmlRegisterType<zDropDown>("ZynAddSubFX", 1, 0, "DropDown");
 
     QQuickView view;
     view.setResizeMode(QQuickView::SizeRootObjectToView);

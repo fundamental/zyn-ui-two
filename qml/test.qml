@@ -24,4 +24,16 @@ RowLayout {
         Layout.fillWidth: true
         Layout.fillHeight: true
     }
+    VSlider {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+    }
+    HSlider {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+    }
+    DropDown {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+    }
 }

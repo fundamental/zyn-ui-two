@@ -8,17 +8,16 @@ find_package(Qt5 REQUIRED
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -g")
 
-set(helloqml_SRC     src/zKnob.cpp src/zGraph.cpp src/zButton.cpp
-    src/zEnvView.cpp src/zmain.cpp draw.c nanovg/nanovg.c)
 
-#QT4_WRAP_CPP(helloqml_HEADERS_MOC ${helloqml_HEADERS})
+FILE(GLOB helloqml_SRC "src/*.cpp")
+
 QT5_ADD_RESOURCES(helloqml_RESOURCES_RCC resources.qrc)
 
-#include(${QT_USE_FILE})
 include_directories(${QT_HEADERS_DIR})
 add_definitions(${QT_DEFINITIONS})
 
 add_executable(helloqml ${helloqml_SRC} 
+                        draw.c nanovg/nanovg.c
                         ${helloqml_HEADERS_MOC}
                         ${helloqml_RESOURCES_RCC})
 
