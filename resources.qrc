@@ -5,5 +5,7 @@
         <file>qml/Button.qml</file>
         <file>qml/Knob.qml</file>
         <file>qml/Graph.qml</file>
+        <file>qml/HLayout.qml</file>
+        <file>qml/VLayout.qml</file>
     </qresource>
 </RCC>
