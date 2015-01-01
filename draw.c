@@ -470,7 +470,7 @@ void drawHarmonicPlot(NVGcontext *vg, float *dat, int n, int x, int y, int w, in
     nvgStrokeWidth(vg, 1);
 }
 //------------------------------------------------------------------------------
-void drawHZSlider(NVGcontext *vg, int x, int y, int w, int h)
+void drawHZSlider(NVGcontext *vg, float val, int x, int y, int w, int h)
 {
     nvgBeginPath(vg);
     nvgRect(vg, x,y,w,h);
@@ -483,13 +483,13 @@ void drawHZSlider(NVGcontext *vg, int x, int y, int w, int h)
 
     //fill color
     nvgBeginPath(vg);
-    nvgRect(vg, cx,pos[1],pos[2]/3.0,pos[3]);
+    nvgRect(vg, cx,pos[1],pos[2]*-val,pos[3]);
     nvgFillColor(vg, nvgRGBA(0xb, 0x2b, 0x4d,255));
     nvgFill(vg);
 }
 
 //------------------------------------------------------------------------------
-void drawVZSlider(NVGcontext *vg, int x, int y, int w, int h)
+void drawVZSlider(NVGcontext *vg, float val, int x, int y, int w, int h)
 {
     nvgBeginPath(vg);
     nvgRect(vg, x,y,w,h);
@@ -502,7 +502,7 @@ void drawVZSlider(NVGcontext *vg, int x, int y, int w, int h)
 
     //fill color
     nvgBeginPath(vg);
-    nvgRect(vg, pos[0], cy ,pos[2],pos[3]/3.0);
+    nvgRect(vg, pos[0], cy ,pos[2],-pos[3]*val);
 	nvgFillColor(vg, nvgRGBA(0x3a,0xc5,0xec,255));
     nvgFill(vg);
 }
@@ -523,12 +523,12 @@ void drawOscArray(NVGcontext *vg, int x, int y, int w, int h)
         {
             float pos[4] = {30.0f*i, 0.0f, 30.0f, 150.0f};
             boarder(4, pos);
-            drawVZSlider(vg, SPLAT(pos));
+            drawVZSlider(vg, 0.3, SPLAT(pos));
         }
         {
             float pos[4] = {30.0f*i, 200.0f, 30.0f, 90.0f};
             boarder(4, pos);
-            drawVZSlider(vg, SPLAT(pos));
+            drawVZSlider(vg, 0.3, SPLAT(pos));
         }
     }
 }

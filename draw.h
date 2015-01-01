@@ -25,8 +25,8 @@ void drawAltDial(NVGcontext *vg, float val, int x, int y, int w, int h);
 void drawEnvEdit(NVGcontext *vg, float *dat, int n, int m, int x, int y, int w, int h);
 void drawEqGrid(NVGcontext *vg, float *dat, int n, int x, int y, int w, int h);
 void drawHarmonicPlot(NVGcontext *vg, float *dat, int n, int x, int y, int w, int h);
-void drawHZSlider(NVGcontext *vg, int x, int y, int w, int h);
-void drawVZSlider(NVGcontext *vg, int x, int y, int w, int h);
+void drawHZSlider(NVGcontext *vg, float val, int x, int y, int w, int h);
+void drawVZSlider(NVGcontext *vg, float val, int x, int y, int w, int h);
 void drawOscArray(NVGcontext *vg, int x, int y, int w, int h);
 ;;;;;;
 

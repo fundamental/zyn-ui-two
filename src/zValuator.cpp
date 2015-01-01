@@ -5,6 +5,7 @@ zValuator::zValuator()
     :m_t(0)
 {
     connect(this, SIGNAL(windowChanged(QQuickWindow*)), this, SLOT(handleWindowChanged(QQuickWindow*)));
+    connect(this, SIGNAL(tChanged()), this, SLOT(update()));
 }
 
 void zValuator::handleWindowChanged(QQuickWindow *win)
@@ -14,4 +15,10 @@ void zValuator::handleWindowChanged(QQuickWindow *win)
         connect(win, SIGNAL(beforeSynchronizing()), this, SLOT(paint()), Qt::DirectConnection);
         win->setClearBeforeRendering(false);
     }
+}
+
+void zValuator::update()
+{
+    if(window())
+        window()->update();
 }

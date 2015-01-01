@@ -6,18 +6,18 @@ Item {
     onChildrenChanged: performLayout()
     onWidthChanged: performLayout()
     onHeightChanged: performLayout()
+    onXChanged: performLayout()
+    onYChanged: performLayout()
 
     function performLayout() {
-        var currentY = layout.y
         var N = layout.children.length
 
         for (var i = 0; i < N; ++i) {
             var obj = layout.children[i]
-            obj.y      = currentY
+            obj.y      = layout.height*(N-i-1)/N
+            obj.x      = 0
             obj.width  = layout.width
             obj.height = layout.height/N
-            obj.x      = layout.x
-            currentY  += layout.height/N
         }
 
     }

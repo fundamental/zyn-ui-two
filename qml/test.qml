@@ -10,15 +10,15 @@ HLayout {
     Graph {}
     Button {}
     EnvView {}
-        HLayout {
-            id: row
-            VSlider {}
-            VSlider {}
-            VSlider {}
-            VSlider {}
+    HLayout {
+        id: row
+        VSlider {}
+        VSlider {}
+        VSlider {}
+        VSlider {}
     }
     VLayout {
-        HSlider {}
+        Knob {}
         HSlider {}
         HSlider {}
         HSlider {}
