@@ -1,20 +1,10 @@
 #pragma once
-#include <QtQuick/QQuickItem>
+#include "zWidget.h"
  
-class zGraph : public QQuickItem
+class zGraph:public zWidget
 {
     Q_OBJECT
-    Q_PROPERTY(qreal value MEMBER m_value)
- 
     public:
         zGraph();
-    public slots:
-        void paint();
-        void handleWindowChanged(class QQuickWindow *win);
-        //float value() const {return m_value;}
-        //void  setValue(float v) {m_value=v;
-        //this->update(boundingRect());}
-
-    private:
-        float m_value;
+        void paint(NVGcontext *vg);
 };

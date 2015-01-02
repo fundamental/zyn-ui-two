@@ -1,17 +1,15 @@
 #pragma once
-#include <QtQuick/QQuickItem>
+#include "zWidget.h"
  
-class zDropDown : public QQuickItem
+class zDropDown:public zWidget
 {
     Q_OBJECT
     Q_PROPERTY(int value MEMBER m_value)
  
     public:
         zDropDown();
-    public slots:
-        void paint();
-        void handleWindowChanged(class QQuickWindow *win);
-
+    public:
+        void paint(NVGcontext *vg);
     private:
         int m_value;
 };

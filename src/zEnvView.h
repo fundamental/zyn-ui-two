@@ -1,15 +1,12 @@
 #pragma once
-#include <QtQuick/QQuickItem>
+#include "zWidget.h"
 
-class zEnvView:public QQuickItem
+class zEnvView:public zWidget
 {
     Q_OBJECT
 public:
     zEnvView();
-
-public slots:
-    void paint();
-    void handleWindowChanged(QQuickWindow *win);
+    void paint(NVGcontext *vg);
 private:
     float m_data[16];
 };

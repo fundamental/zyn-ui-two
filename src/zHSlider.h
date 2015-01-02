@@ -3,6 +3,6 @@
 
 class zHSlider:public zValuator
 {
-public slots:
-    void paint() override;
+public:
+    void paint(NVGcontext *vg) override;
 };

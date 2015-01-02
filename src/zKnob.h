@@ -1,7 +1,7 @@
 #pragma once
-#include <QtQuick/QQuickItem>
+#include "zWidget.h"
 
-class zKnob:public QQuickItem
+class zKnob:public zWidget
 {
     Q_OBJECT
     Q_PROPERTY(qreal t READ t WRITE setT NOTIFY tChanged)
@@ -11,13 +11,10 @@ public:
 
     qreal t() const { return m_t; }
     void setT(qreal t);
+    void paint(NVGcontext *vg);
 
 signals:
     void tChanged();
-
-public slots:
-    void paint();
-    void handleWindowChanged(QQuickWindow *win);
 
 private:
     qreal m_t;

@@ -1,18 +1,14 @@
 #pragma once
-#include <QtQuick/QQuickItem>
+#include "zWidget.h"
 
-class zButton:public QQuickItem
+class zButton:public zWidget
 {
     Q_OBJECT
     Q_PROPERTY(bool t MEMBER m_t)
 
 public:
     zButton();
-
-public slots:
-    void paint();
-    void handleWindowChanged(QQuickWindow *win);
-
+    void paint(NVGcontext *vg);
 private:
     bool m_t;
 };

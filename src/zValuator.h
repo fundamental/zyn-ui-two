@@ -1,7 +1,7 @@
 #pragma once
-#include <QtQuick/QQuickItem>
+#include "zWidget.h"
 
-class zValuator:public QQuickItem
+class zValuator:public zWidget
 {
     Q_OBJECT
     Q_PROPERTY(qreal t MEMBER m_t NOTIFY tChanged);
@@ -15,8 +15,7 @@ signals:
 
 public slots:
     void update();
-    virtual void paint()=0;
-    void handleWindowChanged(QQuickWindow *win);
+    virtual void paint(NVGcontext *vg)=0;
 
 protected:
     qreal m_t;
