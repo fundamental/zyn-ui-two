@@ -1,9 +1,31 @@
-Misc UI Draw/Layout Routines For Replacement UI of ZynAddSubFX.
-This code assumes an OpenGL 2.0 Compatiable Device and it makes use of nanovg
-for virtually all drawing.
-Once the Draw/Layout Routines are pretty much all functional, the actual logic
-of the UI will likely end up implemented in QML, though nothing is set in stone.
+Replacement user interface for ZynAddSubFX
+
+Technology
+----------
+
+- Custom nanovg (opengl 2.0) based rendering
+- Custom constraint based layout
+- QML based structure/event handling
+
+Progress
+--------
+
+As of so far a whole bunch of widget rendering code has been written.
+A basic horizontal weighted/constrained pack layout has been created (in C)
+and two simpler pack algorithms have been made in qml.
+QML/nanovg integration has been establed and it appears to be relatively bug
+free (though perhaps somewhat inefficient).
+Some mouse handling has been done.
+A variety of other widgets have received their design on paper.
+To test some UI performance/integration a simple equalizer or envelop app might
+be created.
+
 Any contributions are very much appreciated.
-Please see
+
+Design Source
+-------------
+
+This work is based off of a UI mockup which can be seen at:
 http://budislavtvp.deviantart.com/art/ZynAddSubFX-UI-Concept-2014-455890191
-For the UI mockup which this work is based off of.
+
+
