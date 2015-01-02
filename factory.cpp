@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <fstream>
 #include <map>
+#include <iostream>
 #include "widget.h"
 
 using std::vector;
