@@ -3,25 +3,27 @@ import ZynAddSubFX 1.0
 import "qrc:/qml/"
 
 
-HLayout {
-    id: layout
-    anchors.fill: parent
-    Knob {}
-    Graph {}
-    Button {}
-    EnvView {}
+Blank {
     HLayout {
-        id: row
-        VSlider {}
-        VSlider {}
-        VSlider {}
-        VSlider {}
-    }
-    VLayout {
+        id: layout
+        anchors.fill: parent
         Knob {}
-        HSlider {}
-        HSlider {}
-        HSlider {}
+        Graph {}
+        Button {}
+        EnvView {}
+        HLayout {
+            id: row
+            VSlider {}
+            VSlider {}
+            VSlider {}
+            VSlider {}
+        }
+        VLayout {
+            Knob {}
+            HSlider {}
+            HSlider {}
+            HSlider {}
+        }
+        DropDown {}
     }
-    DropDown {}
 }
