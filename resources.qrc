@@ -3,6 +3,7 @@
     <qresource prefix="/">
         <file>qml/test.qml</file>
         <file>qml/Button.qml</file>
+        <file>qml/DropDown.qml</file>
         <file>qml/Knob.qml</file>
         <file>qml/Graph.qml</file>
         <file>qml/HLayout.qml</file>

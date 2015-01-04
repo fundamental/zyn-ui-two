@@ -4,7 +4,7 @@ import "qrc:/qml/"
 
 
 Blank {
-    HLayout {
+    HALayout {
         id: layout
         anchors.fill: parent
         Knob {}

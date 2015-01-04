@@ -17,6 +17,7 @@
 #include "zHSlider.h"
 #include "zDropDown.h"
 #include "zBlank.h"
+#include "zHALayout.h"
 
 
 NVGcontext *initVG()
@@ -50,6 +51,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<zHSlider>("ZynAddSubFX", 1, 0, "HSlider");
     qmlRegisterType<zDropDown>("ZynAddSubFX", 1, 0, "DropDown");
     qmlRegisterType<zBlank>("ZynAddSubFX", 1, 0, "Blank");
+    qmlRegisterType<zHALayout>("ZynAddSubFX", 1, 0, "HALayout");
 
     QQuickView view;
     view.setResizeMode(QQuickView::SizeRootObjectToView);
