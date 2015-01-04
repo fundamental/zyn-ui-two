@@ -2,6 +2,20 @@
 #include <GL/gl.h>
 #include <QtQuick/qquickwindow.h>
 
+zBlank::zBlank()
+{
+    connect(this, SIGNAL(windowChanged(QQuickWindow*)), this, SLOT(handleWindowChanged(QQuickWindow*)));
+}
+
+void zBlank::handleWindowChanged(QQuickWindow *win)
+{
+    if (win) {
+        //connect(win, SIGNAL(beforeSynchronizing()), this, SLOT(sync()), Qt::DirectConnection);
+        connect(win, SIGNAL(beforeSynchronizing()), this, SLOT(abstractPaint()), Qt::DirectConnection);
+        win->setClearBeforeRendering(false);
+    }
+}
+
 void draw(QObject *o)
 {
     QQuickItem *item = dynamic_cast<QQuickItem*>(o);

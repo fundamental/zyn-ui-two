@@ -4,7 +4,6 @@
 zValuator::zValuator()
     :m_t(0)
 {
-    connect(this, SIGNAL(windowChanged(QQuickWindow*)), this, SLOT(handleWindowChanged(QQuickWindow*)));
     connect(this, SIGNAL(tChanged()), this, SLOT(update()));
 }
 

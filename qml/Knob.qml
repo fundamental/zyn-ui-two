@@ -4,7 +4,6 @@ import ZynAddSubFX 1.0
 
 Knob {
     id: knob
-    property real aspect: 1
     function updateValue(norm_dy)
     {
         console.log("Pos = ", knob.x, " ", knob.y)

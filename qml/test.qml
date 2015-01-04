@@ -7,11 +7,23 @@ Blank {
     HALayout {
         id: layout
         anchors.fill: parent
-        Knob {}
-        Graph {}
-        Button {}
-        EnvView {}
+        Knob {
+            zscale: 2.0
+        }
+        Graph {
+            zscale: 2
+            aspect: 2
+        }
+        Button {
+            zscale: 0.333
+            aspect: 0.333
+        }
+        EnvView {
+            zscale: 4
+        }
         HLayout {
+            property real zscale: 5
+            property real aspect: 10
             id: row
             VSlider {}
             VSlider {}
@@ -24,6 +36,8 @@ Blank {
             HSlider {}
             HSlider {}
         }
-        DropDown {}
+        DropDown {
+            aspect: 0.333
+        }
     }
 }

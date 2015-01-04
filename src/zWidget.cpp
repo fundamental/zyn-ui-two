@@ -9,17 +9,8 @@
 NVGcontext *initVG();
 
 zWidget::zWidget()
+    :m_zscale(1.0), m_zaspect(1.0)
 {
-    connect(this, SIGNAL(windowChanged(QQuickWindow*)), this, SLOT(handleWindowChanged(QQuickWindow*)));
-}
-
-void zWidget::handleWindowChanged(QQuickWindow *win)
-{
-    if (win) {
-        //connect(win, SIGNAL(beforeSynchronizing()), this, SLOT(sync()), Qt::DirectConnection);
-        connect(win, SIGNAL(beforeSynchronizing()), this, SLOT(abstractPaint()), Qt::DirectConnection);
-        win->setClearBeforeRendering(false);
-    }
 }
 
 void zWidget::abstractPaint()

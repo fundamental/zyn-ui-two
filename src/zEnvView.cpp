@@ -4,7 +4,6 @@ zEnvView::zEnvView()
 {
     for(int i=0; i<16; ++i)
         m_data[i] = rand()*1.0/RAND_MAX;
-    connect(this, SIGNAL(windowChanged(QQuickWindow*)), this, SLOT(handleWindowChanged(QQuickWindow*)));
 }
 
 void zEnvView::paint(NVGcontext *vg)

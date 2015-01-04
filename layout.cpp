@@ -55,7 +55,7 @@ bool layoutFlowHor(LayoutEngine &l, float x, float y, float w, float h)
     //Find max Height To Define label row
     float maxH = 0;
     for(auto b:l.boxes) {
-        float t  = b.rel*b.aspect/l.unit_cost;
+        float t  = b.rel/(b.aspect*l.unit_cost);
         if(t > maxH)
             maxH = t;
     }
@@ -84,9 +84,9 @@ void layoutFlowVir(LayoutEngine &l, float x, float y, float w, float h)
     const float goal = l.traits&LAYOUT_LABELS ? h*0.62 : h;
     float unit_cost = 1e-9;
     for(auto b:l.boxes) {
-        float t  = b.rel*b.aspect/unit_cost;
+        float t  = b.rel/(b.aspect*unit_cost);
         if(t > goal) {
-            unit_cost = b.rel*b.aspect/goal;
+            unit_cost = b.rel/(b.aspect*goal);
         }
     }
 
