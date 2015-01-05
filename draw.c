@@ -293,7 +293,7 @@ void drawEnvEdit(NVGcontext *vg, float *dat, int n, int m, int x, int y, int w, 
     nvgMoveTo(vg, x,y+h);
     for(int i=0; i<n; ++i)
         nvgLineTo(vg, x+w*dat[2*i+1], y+h/2-h/2*dat[2*i]);
-    nvgMoveTo(vg, x+w, y+h);
+    nvgLineTo(vg, x+w, y+h);
     nvgClosePath(vg);
 	nvgFillColor(vg, nvgRGBA(0x11,0x45,0x75,55));
     nvgFill(vg);
@@ -317,8 +317,8 @@ void drawEnvEdit(NVGcontext *vg, float *dat, int n, int m, int x, int y, int w, 
 
     //Draw Actual Line
     nvgBeginPath(vg);
-    nvgMoveTo(vg, x+w*dat[1], y+h-h*dat[0]);
-    for(int i=0; i<n; ++i)
+    nvgMoveTo(vg, x+w*dat[1], y+h/2-h/2*dat[0]);
+    for(int i=1; i<n; ++i)
         nvgLineTo(vg, x+w*dat[2*i+1], y+h/2-h/2*dat[2*i]);
     nvgStrokeWidth(vg, 4);
 	nvgStrokeColor(vg, nvgRGBA(0x11,0x45,0x75,255));

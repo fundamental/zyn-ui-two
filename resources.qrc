@@ -10,5 +10,6 @@
         <file>qml/VLayout.qml</file>
         <file>qml/VSlider.qml</file>
         <file>qml/HSlider.qml</file>
+        <file>qml/EnvView.qml</file>
     </qresource>
 </RCC>
