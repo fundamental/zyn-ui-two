@@ -18,6 +18,7 @@
 #include "zDropDown.h"
 #include "zBlank.h"
 #include "zHALayout.h"
+#include "zTextList.h"
 
 
 NVGcontext *initVG()
@@ -52,6 +53,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<zDropDown>("ZynAddSubFX", 1, 0, "DropDown");
     qmlRegisterType<zBlank>("ZynAddSubFX", 1, 0, "Blank");
     qmlRegisterType<zHALayout>("ZynAddSubFX", 1, 0, "HALayout");
+    qmlRegisterType<zTextList>("ZynAddSubFX", 1, 0, "TextList");
 
     QQuickView view;
     view.setResizeMode(QQuickView::SizeRootObjectToView);

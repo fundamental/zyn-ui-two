@@ -39,5 +39,9 @@ Blank {
         DropDown {
             aspect: 0.333
         }
+        TextList {
+            zscale: 3
+            aspect: 3
+        }
     }
 }
