@@ -22,7 +22,6 @@ HSlider {
         property variant previousPosition
         onPressed: {
             previousPosition = Qt.point(mouseX, mouseY)
-            console.log("Something something")
         }
         onPositionChanged: {
             if (pressedButtons == Qt.LeftButton)
@@ -35,4 +34,3 @@ HSlider {
         }
     }
 }
-

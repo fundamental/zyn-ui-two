@@ -22,14 +22,18 @@ void drawButtonGrid(NVGcontext *vg, int n, int m, int x, int y, int w, int h);
 void drawGrid(NVGcontext *vg, int n, int m, int x, int y, int w, int h);
 void drawSin(NVGcontext *vg, int x, int y, int w, int h);
 void drawAltDial(NVGcontext *vg, float val, int x, int y, int w, int h);
+void drawPanDial(NVGcontext *vg, const char *desc, float val, int x, int y, int w, int h);
 void drawEnvEdit(NVGcontext *vg, float *dat, int n, int m, int x, int y, int w, int h);
 void drawEqGrid(NVGcontext *vg, float *dat, int n, int x, int y, int w, int h);
 void drawHarmonicPlot(NVGcontext *vg, float *dat, int n, int x, int y, int w, int h);
+void drawVSlider(NVGcontext *vg, float val, int x, int y, int w, int h);
+void drawVAltSlider(NVGcontext *vg, float val, int x, int y, int w, int h);
 void drawHZSlider(NVGcontext *vg, float val, int x, int y, int w, int h);
 void drawVZSlider(NVGcontext *vg, float val, int x, int y, int w, int h);
 void drawOscArray(NVGcontext *vg, int x, int y, int w, int h);
 void drawPowLabel(NVGcontext *vg, int x, int y, int w, int h);
-void drawPowButton(NVGcontext *vg, int x, int y, int w, int h)
+void drawPowButton(NVGcontext *vg, int x, int y, int w, int h);
+void drawToggleBox(NVGcontext *vg, const char *str, int x, int y, int w, int h);
 ;;;;;;
 
 typedef struct

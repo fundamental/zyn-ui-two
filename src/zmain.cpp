@@ -20,6 +20,12 @@
 #include "zHALayout.h"
 #include "zTextList.h"
 #include "zPowButton.h"
+#include "zBox.h"
+#include "zVBar.h"
+#include "zPanKnob.h"
+#include "zVAltSlider.h"
+#include "zLayout.h"
+#include "zDummy.h"
 
 
 NVGcontext *initVG()
@@ -54,12 +60,25 @@ int main(int argc, char *argv[])
     qmlRegisterType<zDropDown>("ZynAddSubFX", 1, 0, "DropDown");
     qmlRegisterType<zBlank>("ZynAddSubFX", 1, 0, "Blank");
     qmlRegisterType<zHALayout>("ZynAddSubFX", 1, 0, "HALayout");
+    qmlRegisterType<zLayout>("ZynAddSubFX", 1, 0, "ZLayout");
     qmlRegisterType<zTextList>("ZynAddSubFX", 1, 0, "TextList");
     qmlRegisterType<zPowButton>("ZynAddSubFX", 1, 0, "PowButton");
+    qmlRegisterType<zBox>("ZynAddSubFX", 1, 0, "Box");
+    qmlRegisterType<zVBar>("ZynAddSubFX", 1, 0, "VBar");
+    qmlRegisterType<zPanKnob>("ZynAddSubFX", 1, 0, "PanKnob");
+    qmlRegisterType<zVAltSlider>("ZynAddSubFX", 1, 0, "VAltSlider");
+
+    //Unimplemented
+    //qmlRegisterType<zDummy>("ZynAddSubFX", 1, 0, "VLayout");
+
+    const char *element = "qrc:/qml/test.qml";
+    if(argc == 2)
+        element = argv[1];
+
 
     QQuickView view;
     view.setResizeMode(QQuickView::SizeRootObjectToView);
-    view.setSource(QUrl("qrc:/qml/test.qml"));
+    view.setSource(QUrl(element));
     view.show();
     return app.exec();
 }

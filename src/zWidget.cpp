@@ -9,7 +9,8 @@
 NVGcontext *initVG();
 
 zWidget::zWidget()
-    :m_zscale(1.0), m_zaspect(1.0)
+    :m_zscale(1.0), m_zaspect(1.0), m_label(""),
+     m_zexpandable(false)
 {
 }
 

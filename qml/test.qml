@@ -4,7 +4,7 @@ import "qrc:/qml/"
 
 
 Blank {
-    HALayout {
+    ZLayout {
         id: layout
         anchors.fill: parent
         Knob {
@@ -20,6 +20,7 @@ Blank {
             aspect: 0.333
         }
         EnvView {
+            expandable: true
             zscale: 4
         }
         HLayout {

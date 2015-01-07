@@ -14,7 +14,7 @@ Item {
 
         for (var i = 0; i < N; ++i) {
             var obj = layout.children[i]
-            obj.y      = layout.height*(N-i-1)/N
+            obj.y      = layout.height*i/N
             obj.x      = 0
             obj.width  = layout.width
             obj.height = layout.height/N
