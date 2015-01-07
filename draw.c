@@ -591,6 +591,28 @@ void drawLogPlot(NVGcontext *vg, float *X, int x, int y, int w, int h)
     }
 }
 //------------------------------------------------------------------------------
+void drawPowLabel(NVGcontext *vg, int x, int y, int w, int h)
+{
+    float cx = x+w/2.0;
+    float cy = y+h/2.0;
+    float center = -M_PI/2.0;
+    float sw = h/10.0;
+
+    nvgLineCap(vg, NVG_ROUND);
+    nvgStrokeWidth(vg, sw);
+	nvgBeginPath(vg);
+    nvgArc(vg, cx, cy, 0.3*h, center-0.4, center+0.4, 1);
+    nvgMoveTo(vg, cx, y+0.4*h);
+    nvgLineTo(vg, cx, y+0.1*h);
+    nvgStroke(vg);
+}
+//------------------------------------------------------------------------------
+void drawPowButton(NVGcontext *vg, int x, int y, int w, int h)
+{
+    drawBox(vg, x, y, w, h);
+    nvgStrokeColor(vg, nvgRGBA(0x00,0xcf,0xf7,255));
+    drawPowLabel(vg, x, y, w, h);
+}
 //------------------------------------------------------------------------------
 
 void renderDial(NVGcontext *vg, dial_t dial)

@@ -14,6 +14,7 @@ Blank {
             zscale: 2
             aspect: 2
         }
+        PowButton {}
         Button {
             zscale: 0.333
             aspect: 0.333

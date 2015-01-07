@@ -19,6 +19,7 @@
 #include "zBlank.h"
 #include "zHALayout.h"
 #include "zTextList.h"
+#include "zPowButton.h"
 
 
 NVGcontext *initVG()
@@ -54,6 +55,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<zBlank>("ZynAddSubFX", 1, 0, "Blank");
     qmlRegisterType<zHALayout>("ZynAddSubFX", 1, 0, "HALayout");
     qmlRegisterType<zTextList>("ZynAddSubFX", 1, 0, "TextList");
+    qmlRegisterType<zPowButton>("ZynAddSubFX", 1, 0, "PowButton");
 
     QQuickView view;
     view.setResizeMode(QQuickView::SizeRootObjectToView);

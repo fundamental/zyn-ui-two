@@ -28,6 +28,8 @@ void drawHarmonicPlot(NVGcontext *vg, float *dat, int n, int x, int y, int w, in
 void drawHZSlider(NVGcontext *vg, float val, int x, int y, int w, int h);
 void drawVZSlider(NVGcontext *vg, float val, int x, int y, int w, int h);
 void drawOscArray(NVGcontext *vg, int x, int y, int w, int h);
+void drawPowLabel(NVGcontext *vg, int x, int y, int w, int h);
+void drawPowButton(NVGcontext *vg, int x, int y, int w, int h)
 ;;;;;;
 
 typedef struct

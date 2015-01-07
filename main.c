@@ -119,10 +119,11 @@ int main()
         glClearColor(0, 0, 0, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
 
-#define M_PI 3.14159
+//#define M_PI 3.14159
         nvgBeginFrame(vg, winWidth, winHeight, pxRatio);
-        float in[100] = {0.0, 0.0, 0.5, 0.2, 0.3, 0.7,0.9,0.8,0.0,1.0};
-        drawHarmonicPlot(vg, in, 100, 0,0,winWidth, winHeight);
+        //float in[100] = {0.0, 0.0, 0.5, 0.2, 0.3, 0.7,0.9,0.8,0.0,1.0};
+        //drawHarmonicPlot(vg, in, 100, 0,0,winWidth, winHeight);
+        drawPowButton(vg, 0,0,winWidth, winHeight);
 
 	//nvgBeginPath(vg);
     //float cx = 30.0, cy = 30.0, h = 80;
