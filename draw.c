@@ -204,14 +204,14 @@ void drawGrid(NVGcontext *vg, int n, int m, int x, int y, int w, int h)
         nvgBeginPath(vg);
         nvgMoveTo(vg, i*W+x, y);
         nvgLineTo(vg, i*W+x, y+h);
-        nvgStrokeColor(vg, nvgRGBA(0,0,0,255));
+        nvgStrokeColor(vg, nvgRGBA(0x06,0x35,0x04b,255));
         nvgStroke(vg);
     }
     for(int i=0; i<=m; ++i) {
         nvgBeginPath(vg);
         nvgMoveTo(vg, x,   y+i*H);
         nvgLineTo(vg, x+w, y+i*H);
-        nvgStrokeColor(vg, nvgRGBA(0,0,0,255));
+        nvgStrokeColor(vg, nvgRGBA(0x06,0x35,0x04b,255));
         nvgStroke(vg);
     }
 }
@@ -224,13 +224,14 @@ void drawSin(NVGcontext *vg, int x, int y, int w, int h)
     nvgBeginPath(vg);
     {
         int i=0;
-        nvgMoveTo(vg, x+i*W, y+h/2-h*0.5*sin(2*M_PI*i*1.0/(N-1)));
+        nvgMoveTo(vg, x+i*W, y+h/2-0.95*h*0.5*sin(2*M_PI*i*1.0/(N-1)));
     }
     for(int i=0; i<N; ++i) {
-        nvgLineTo(vg, x+i*W, y+h/2-h*0.5*sin(2*M_PI*i*1.0/(N-1)));
+        nvgLineTo(vg, x+i*W, y+h/2-0.95*h*0.5*sin(2*M_PI*i*1.0/(N-1)));
     }
 
-    nvgStrokeColor(vg, nvgRGBA(0,0,0,255));
+    nvgStrokeWidth(vg, w/40.0);
+    nvgStrokeColor(vg, nvgRGBA(0x00,0xcf,0xf7,255));
     nvgStroke(vg);
 }
 //------------------------------------------------------------------------------
