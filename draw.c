@@ -385,6 +385,8 @@ void drawLinx(NVGcontext *vg, float xmin, float xmax, float x, float y, float w,
         nvgMoveTo(vg, x,   y+dy);
         nvgLineTo(vg, x+w, y+dy);
         nvgStrokeColor(vg, nvgRGBA(0x01, 0x47, 0x67,255));
+        if(xx == 0)
+            nvgStrokeColor(vg, nvgRGBA(0x00, 0xb3, 0xd5, 255));
         nvgStroke(vg);
     }
 }
@@ -438,21 +440,24 @@ void drawLogLogGrid(NVGcontext *vg, float xmin, float xmax, float ymin, float ym
 //------------------------------------------------------------------------------
 void drawSemiLogy(NVGcontext *vg, float xmin, float xmax, float ymin, float ymax, float x, float y, float w, float h)
 {
-    drawLinx(vg,xmin,xmax,x,y,w,h);
     drawLogy(vg,ymin,ymax,x,y,w,h);
+    drawLinx(vg,xmin,xmax,x,y,w,h);
 }
 //------------------------------------------------------------------------------
-void drawEqGrid(NVGcontext *vg, float *dat, int n, int x, int y, int w, int h)
+void drawEqGrid(NVGcontext *vg, int x, int y, int w, int h)
 {
-    nvgBeginPath(vg);
-    nvgRect(vg, x,y,w,h);
-    nvgFillColor(vg, nvgRGBA(0x0d,0x0d,0x0d,255));
-    nvgStrokeColor(vg, nvgRGBA(0x01, 0x47, 0x67,255));
-    nvgFill(vg);
-    nvgStroke(vg);
+    //nvgBeginPath(vg);
+    //nvgRect(vg, x,y,w,h);
+    //nvgFillColor(vg, nvgRGBA(0x0d,0x0d,0x0d,255));
+    //nvgStrokeColor(vg, nvgRGBA(0x01, 0x47, 0x67,255));
+    //nvgFill(vg);
+    //nvgStroke(vg);
 
-    drawSemiLogy(vg, 10,60,2,5000,x,y,w,h);
-
+    drawSemiLogy(vg, -10,10,2,5000,x,y,w,h);
+}
+//------------------------------------------------------------------------------
+void drawEqLine(NVGcontext *vg, float *dat, int n, int x, int y, int w, int h)
+{
     //Draw UnderLine
     nvgBeginPath(vg);
     nvgMoveTo(vg, x,y+h);
@@ -462,7 +467,7 @@ void drawEqGrid(NVGcontext *vg, float *dat, int n, int x, int y, int w, int h)
     }
     nvgLineTo(vg, x+w, y+h);
     nvgClosePath(vg);
-    nvgFillColor(vg, nvgRGBA(0x11,0x45,0x75,100));
+    nvgFillColor(vg, nvgRGBA(0x11,0x45,0x75,150));
     nvgFill(vg);
 
     //Draw Actual Line
@@ -472,8 +477,8 @@ void drawEqGrid(NVGcontext *vg, float *dat, int n, int x, int y, int w, int h)
         float dx = w*(i*1.0/(n-1));
         nvgLineTo(vg, x+dx, y+h/2-h/2*dat[i]);
     }
-    nvgStrokeWidth(vg, 4);
-    nvgStrokeColor(vg, nvgRGBA(0x11,0x45,0x75,255));
+    nvgStrokeWidth(vg, 2);
+    nvgStrokeColor(vg, nvgRGBA(0xfe, 0x84, 0x02, 150));
     nvgStroke(vg);
     nvgStrokeWidth(vg, 1);
 }

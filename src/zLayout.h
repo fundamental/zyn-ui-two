@@ -37,7 +37,7 @@ public slots:
             bool  expandable = false;
             if(aspect_.canConvert<double>())
                 aspect = aspect_.toDouble();
-            if(scale_.canConvert<double>() && scale_.toDouble() != 0.0)
+            if(scale_.canConvert<double>())
                 scale = scale_.toDouble();
             if(expandable_.canConvert<bool>())
                 expandable = expandable_.toBool();

@@ -25,6 +25,7 @@
 #include "zPanKnob.h"
 #include "zVAltSlider.h"
 #include "zLayout.h"
+#include "zEQView.h"
 #include "zDummy.h"
 
 
@@ -63,13 +64,16 @@ int main(int argc, char *argv[])
     qmlRegisterType<zLayout>("ZynAddSubFX", 1, 0, "ZLayout");
     qmlRegisterType<zTextList>("ZynAddSubFX", 1, 0, "TextList");
     qmlRegisterType<zPowButton>("ZynAddSubFX", 1, 0, "PowButton");
+    qmlRegisterType<zPowButton>("ZynAddSubFX", 1, 0, "PowerButton");
     qmlRegisterType<zBox>("ZynAddSubFX", 1, 0, "Box");
     qmlRegisterType<zVBar>("ZynAddSubFX", 1, 0, "VBar");
     qmlRegisterType<zPanKnob>("ZynAddSubFX", 1, 0, "PanKnob");
     qmlRegisterType<zVAltSlider>("ZynAddSubFX", 1, 0, "VAltSlider");
+    qmlRegisterType<zEQView>("ZynAddSubFX", 1, 0, "EQView");
 
     //Unimplemented
-    //qmlRegisterType<zDummy>("ZynAddSubFX", 1, 0, "VLayout");
+    qmlRegisterType<zDummy>("ZynAddSubFX", 1, 0, "Div");
+    qmlRegisterType<zDummy>("ZynAddSubFX", 1, 0, "TextField");
 
     const char *element = "qrc:/qml/test.qml";
     if(argc == 2)
