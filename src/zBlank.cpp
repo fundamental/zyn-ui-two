@@ -16,16 +16,20 @@ void zBlank::handleWindowChanged(QQuickWindow *win)
     }
 }
 
-void draw(QObject *o)
+void draw(QObject *item)
 {
-    QQuickItem *item = dynamic_cast<QQuickItem*>(o);
-    zWidget *X = dynamic_cast<zWidget*>(o);
+    QQuickItem *quick = dynamic_cast<QQuickItem*>(item);
+    if(!quick && !item->children().isEmpty())
+        ;
+    zWidget *X = dynamic_cast<zWidget*>(item);
     if(X)
         X->abstractPaint();
-    const QObjectList children = item->children();
-    size_t N = children.size();
-    for(unsigned i=0; i<N; ++i)
-        draw(children[i]);
+    if(quick) {
+        const QList<QQuickItem*> children = quick->childItems();
+        size_t N = children.size();
+        for(unsigned i=0; i<N; ++i)
+            draw(children[i]);
+    }
 }
 
 void zBlank::abstractPaint()
