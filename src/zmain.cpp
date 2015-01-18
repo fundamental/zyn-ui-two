@@ -26,6 +26,7 @@
 #include "zVAltSlider.h"
 #include "zLayout.h"
 #include "zEQView.h"
+#include "zTextField.h"
 #include "zDummy.h"
 
 
@@ -70,10 +71,10 @@ int main(int argc, char *argv[])
     qmlRegisterType<zPanKnob>("ZynAddSubFX", 1, 0, "PanKnob");
     qmlRegisterType<zVAltSlider>("ZynAddSubFX", 1, 0, "VAltSlider");
     qmlRegisterType<zEQView>("ZynAddSubFX", 1, 0, "EQView");
+    qmlRegisterType<zTextField>("ZynAddSubFX", 1, 0, "TextField");
 
     //Unimplemented
     qmlRegisterType<zDummy>("ZynAddSubFX", 1, 0, "Div");
-    qmlRegisterType<zDummy>("ZynAddSubFX", 1, 0, "TextField");
 
     const char *element = "qrc:/qml/test.qml";
     if(argc == 2)
