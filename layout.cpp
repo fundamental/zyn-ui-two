@@ -75,10 +75,14 @@ bool layoutFlowHor(LayoutEngine &l, float x, float y, float w, float h)
 
     //Find max Height To Define label row
     float maxH = 0;
+    float realMaxH = 0;
     for(auto b:l.boxes) {
         float t  = b.rel/(b.aspect*l.unit_cost);
         if(t > maxH)
             maxH = t;
+        t  = b.rel/(l.unit_cost);
+        if(t > realMaxH)
+            realMaxH = t;
     }
     l.unused_space = 0;
 
@@ -88,7 +92,7 @@ bool layoutFlowHor(LayoutEngine &l, float x, float y, float w, float h)
         if(l.cy_label+l.label_h/2 > y+h)
             return false;
     } else
-        return maxH < h;
+        return realMaxH < h;
 
     return true;
 }
@@ -105,9 +109,9 @@ void layoutFlowVir(LayoutEngine &l, float x, float y, float w, float h)
     const float goal = l.traits&LAYOUT_LABELS ? h*0.62 : h;
     float unit_cost = 1e-9;
     for(auto b:l.boxes) {
-        float t  = b.rel/(b.aspect*unit_cost);
+        float t  = b.rel/(unit_cost);
         if(t > goal) {
-            unit_cost = b.rel/(b.aspect*goal);
+            unit_cost = b.rel/(goal);
         }
     }
 

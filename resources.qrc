@@ -12,5 +12,6 @@
         <file>qml/HSlider.qml</file>
         <file>qml/EnvView.qml</file>
         <file>qml/MixerElement.qml</file>
+        <file>qml/KitRow.qml</file>
     </qresource>
 </RCC>

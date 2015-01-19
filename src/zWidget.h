@@ -18,6 +18,8 @@ public:
 public slots:
     virtual void abstractPaint();
     virtual void paint(NVGcontext *vg)=0;
+    void handleWindowChanged(QQuickWindow *win);
+    void handleSync();
 protected:
     qreal m_zscale, m_zaspect;
     QString m_label;

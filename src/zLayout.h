@@ -26,9 +26,9 @@ public slots:
         if(m_vertical)
             layout_pars |= LAYOUT_VERT;
         layout_t layout = layoutCreate(layout_pars);
-        for(int i=0; i<children().size(); ++i)
+        for(int i=0; i<childItems().size(); ++i)
         {
-            QObject *obj = children()[i];
+            QObject *obj = childItems()[i];
             QVariant aspect_ = obj->property("aspect");
             QVariant scale_ = obj->property("zscale");
             QVariant expandable_ = obj->property("expandable");
@@ -48,9 +48,9 @@ public slots:
             }
         }
         layoutFlow(layout, 0, 0, width(), height());
-        for(int i=0; i<children().size(); ++i)
+        for(int i=0; i<childItems().size(); ++i)
         {
-            QQuickItem *obj = dynamic_cast<QQuickItem*>(children()[i]);
+            QQuickItem *obj = dynamic_cast<QQuickItem*>(childItems()[i]);
             float pos[4];
             layoutGet(layout, i, pos);
             obj->setX(pos[0]);
