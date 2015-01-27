@@ -17,8 +17,6 @@ public:
         connect(this, SIGNAL(widthChanged()), this, SLOT(doLayout()));
         connect(this, SIGNAL(childrenChanged()), this, SLOT(doLayout()));
     }
-signals:
-
 public slots:
     void doLayout()
     {
@@ -29,6 +27,9 @@ public slots:
         for(int i=0; i<childItems().size(); ++i)
         {
             QObject *obj = childItems()[i];
+            //printf("layout = '%s'\n", obj->metaObject()->className());
+            if(QString("QQuickRepeater") == obj->metaObject()->className())
+                continue;
             QVariant aspect_ = obj->property("aspect");
             QVariant scale_ = obj->property("zscale");
             QVariant expandable_ = obj->property("expandable");
@@ -47,12 +48,15 @@ public slots:
                 layoutExpandable(layout);
             }
         }
-        layoutFlow(layout, 0, 0, width(), height());
+        layoutFlow(layout, 0, layoutY(), width(), layoutH());
+        int j=0;
         for(int i=0; i<childItems().size(); ++i)
         {
             QQuickItem *obj = dynamic_cast<QQuickItem*>(childItems()[i]);
+            if(QString("QQuickRepeater") == obj->metaObject()->className())
+                continue;
             float pos[4];
-            layoutGet(layout, i, pos);
+            layoutGet(layout, j++, pos);
             obj->setX(pos[0]);
             obj->setY(pos[1]);
             obj->setWidth(pos[2]);
@@ -61,5 +65,7 @@ public slots:
     }
     virtual void paint(NVGcontext *vg){};
 protected:
+    virtual float layoutY() const {return 0.0f;};
+    virtual float layoutH() const {return height();};
     bool m_vertical;
 };

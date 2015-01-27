@@ -35,6 +35,7 @@ void drawOscArray(NVGcontext *vg, int x, int y, int w, int h);
 void drawPowLabel(NVGcontext *vg, int x, int y, int w, int h);
 void drawPowButton(NVGcontext *vg, int x, int y, int w, int h);
 void drawToggleBox(NVGcontext *vg, const char *str, int x, int y, int w, int h);
+void drawModuleBox(NVGcontext *vg, const char *str, int x, int y, int w, int h);
 ;;;;;;
 
 typedef struct
@@ -49,6 +50,8 @@ void renderDial(NVGcontext *vg, dial_t dial);
 //General Geometry
 float *pad(float scale, float *bb);
 float *boarder(float scale, float *bb);
+
+float textAspect(NVGcontext *vg, const char *text);
 #ifdef __cplusplus
 }
 #endif

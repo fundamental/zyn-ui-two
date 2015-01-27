@@ -1,17 +1,29 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource prefix="/">
-        <file>qml/test.qml</file>
+        <file>qml/AdVoice.qml</file>
+        <file>qml/AltKnob.qml</file>
+        <file>qml/AmpView.qml</file>
         <file>qml/Button.qml</file>
         <file>qml/DropDown.qml</file>
-        <file>qml/Knob.qml</file>
+        <file>qml/EQtest.qml</file>
+        <file>qml/EnvEdit.qml</file>
+        <file>qml/EnvView.qml</file>
+        <file>qml/FilterView.qml</file>
+        <file>qml/FreqView.qml</file>
         <file>qml/Graph.qml</file>
         <file>qml/HLayout.qml</file>
+        <file>qml/HSlider.qml</file>
+        <file>qml/Kit.qml</file>
+        <file>qml/KitRow.qml</file>
+        <file>qml/Knob.qml</file>
+        <file>qml/LfoView.qml</file>
+        <file>qml/Mixer.qml</file>
+        <file>qml/MixerElement.qml</file>
+        <file>qml/Module.qml</file>
+        <file>qml/SubVoice.qml</file>
         <file>qml/VLayout.qml</file>
         <file>qml/VSlider.qml</file>
-        <file>qml/HSlider.qml</file>
-        <file>qml/EnvView.qml</file>
-        <file>qml/MixerElement.qml</file>
-        <file>qml/KitRow.qml</file>
+        <file>qml/test.qml</file>
     </qresource>
 </RCC>
