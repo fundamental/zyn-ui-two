@@ -716,6 +716,49 @@ void drawToggleBox(NVGcontext *vg, const char *str, int x, int y, int w, int h)
     nvgText(vg, x+w/2,y+h*0.5f,str, NULL);
 }
 //------------------------------------------------------------------------------
+void drawModuleBox(NVGcontext *vg, const char *str, int x, int y, int w, int h)
+{
+    float pos_[4] = {(float)x, (float)y, (float)w, (float)h};
+    nvgBeginPath(vg);
+    nvgRect(vg, x, y, w, h);
+    nvgFillColor(vg, nvgRGBA(0, 0, 0, 255));
+    nvgFill(vg);
+
+    {
+        ////paint the top half
+        float pos[4] = {SPLAT(pos_)};
+        pos[3] *= 0.2;
+        nvgBeginPath(vg);
+        boarder(pos_[3]*0.01, pos);
+        nvgRect(vg, SPLAT(pos));
+        nvgFillColor(vg, nvgRGBA(0xa, 0x2e, 0x4c, 255));
+        nvgFill(vg);
+        float upperspace[4] = {pos[0]+pos[2]*2.0f/3.0f,
+            pos[1], pos[2]/3.0f, pos[3]};
+        //upper.draw(upperspace);
+
+
+        float pos2[4] = {SPLAT(pos)};
+        pos2[2] /= 3;
+        pad(0.9, pos2);
+        drawLeftLabel(vg, str, SPLAT(pos2));
+    }
+
+
+
+    {
+        //SMAP(pos_);
+        float innerspace[4] = {x, y+h*0.2f, w, h*0.8f};
+        boarder(h*0.01, innerspace);
+        //paint the inner panel
+        nvgBeginPath(vg);
+        nvgRect(vg, SPLAT(innerspace));
+        nvgFillColor(vg, nvgRGBA(0x6, 0x27, 0x37, 255));
+        nvgFill(vg);
+        //inner.draw(innerspace);
+    }
+}
+//------------------------------------------------------------------------------
 
 void renderDial(NVGcontext *vg, dial_t dial)
 {

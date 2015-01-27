@@ -35,6 +35,7 @@ void drawOscArray(NVGcontext *vg, int x, int y, int w, int h);
 void drawPowLabel(NVGcontext *vg, int x, int y, int w, int h);
 void drawPowButton(NVGcontext *vg, int x, int y, int w, int h);
 void drawToggleBox(NVGcontext *vg, const char *str, int x, int y, int w, int h);
+void drawModuleBox(NVGcontext *vg, const char *str, int x, int y, int w, int h);
 ;;;;;;
 
 typedef struct
