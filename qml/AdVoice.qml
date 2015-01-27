@@ -2,16 +2,19 @@ import QtQuick 2.2
 import ZynAddSubFX 1.0
 import "qrc:/qml/"
 
-VLayout {
-    HLayout {
-        AmpView    {}
-        FreqView   {}
-        FilterView {}
-    }
-    EnvEdit {}
-    HLayout {
-        LfoView { label: "amplitude lfo" }
-        LfoView { label: "frequency lfo" }
-        LfoView { label: "filter    lfo" }
+Blank {
+    VLayout {
+        anchors.fill: parent
+        HLayout {
+            AmpView    {}
+            FreqView   {}
+            FilterView {}
+        }
+        EnvView {}
+        HLayout {
+            LfoView { label: "amplitude lfo" }
+            LfoView { label: "frequency lfo" }
+            LfoView { label: "filter    lfo" }
+        }
     }
 }

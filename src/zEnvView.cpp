@@ -15,8 +15,8 @@ void zEnvView::paint(NVGcontext *vg)
 
 int zEnvView::objNear(QPointF p)
 {
-    const float threshold = 0.05;
-    float best = 10;
+    const float threshold = 0.2;
+    float best = 30;
     int   bestInd = -1;
     for(int i=0; i<5; ++i) {
         QPointF d = QPointF(m_data[2*i+1],m_data[2*i+0])-p;
