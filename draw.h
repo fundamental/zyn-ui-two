@@ -50,6 +50,8 @@ void renderDial(NVGcontext *vg, dial_t dial);
 //General Geometry
 float *pad(float scale, float *bb);
 float *boarder(float scale, float *bb);
+
+float textAspect(NVGcontext *vg, const char *text);
 #ifdef __cplusplus
 }
 #endif

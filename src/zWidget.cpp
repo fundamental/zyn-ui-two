@@ -53,7 +53,6 @@ void zWidget::abstractPaint()
 {
     static long drawCount = 0;
     drawCount++;
-    //printf("draw %ld: '%s'\n", drawCount, metaObject()->className());
 
     auto pos = mapToItem(window()->contentItem(), QPointF(0,0));
     float yy = (window()->contentItem()->height()-height())-pos.y();
@@ -64,6 +63,9 @@ void zWidget::abstractPaint()
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
     }
 
+    printf("draw %ld: '%s'{%s}(%f,%f,%f,%f)\n", drawCount,
+            metaObject()->className(), m_label.toLatin1().data(),
+            pos.x(),yy,width(),height());
     NVGcontext *vg = (NVGcontext*)initVG();
     glViewport(pos.x(), yy, width(), height());
     nvgBeginFrame(vg, width(), height(), 1.0);
@@ -75,4 +77,22 @@ void zWidget::abstractPaint()
         for(unsigned i=0; i<N; ++i)
             draw(childItems()[i]);
     }
+}
+
+std::string zWidget::getLabel() const
+{
+    if(m_label.isEmpty())
+        return "LABEL";
+    std::string tmp = m_label.toLatin1().data();
+    std::string result;
+    const char *label = tmp.c_str();
+    bool wasSpace = false;
+    while(*label) {
+        char c = *label;
+        if((c==' ' && !wasSpace) || c != ' ')
+            result += (char) toupper(c);
+        wasSpace = c==' ';
+        label++;
+    }
+    return result;
 }

@@ -6,8 +6,10 @@ zButton::zButton()
 
 void zButton::paint(NVGcontext *vg)
 {
-    const char *label = "Button";
-    if(!m_label.isEmpty())
-        label = m_label.toLatin1().data();
-    drawButton(vg, label, 0, 0, width(), height());
+    drawButton(vg, getLabel().c_str(), 0, 0, width(), height());
+    m_zaspect = textAspect(vg, getLabel().c_str());
+}
+
+void zButton::setAutoAspect(bool)
+{
 }

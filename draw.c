@@ -790,3 +790,13 @@ float *boarder(float scale, float *bb)
     bb[3] -= 2*scale;
     return bb;
 }
+
+float textAspect(NVGcontext *vg, const char *text)
+{
+    nvgFontSize(vg, 10);
+    nvgFontFace(vg, "sans");
+    float bounds[4];
+    nvgTextBounds(vg, 0, 0, text, NULL, bounds);
+    //printf("textbounds [%f,%f,%f,%f]\n", SPLAT(bounds));
+    return (bounds[3]-bounds[1])/(bounds[2]-bounds[0]);
+}

@@ -21,6 +21,7 @@ public slots:
     void handleWindowChanged(QQuickWindow *win);
     void handleSync();
 protected:
+    std::string getLabel() const;
     qreal m_zscale, m_zaspect;
     QString m_label;
     bool m_zexpandable;

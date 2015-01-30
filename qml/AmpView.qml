@@ -2,7 +2,9 @@ import QtQuick 2.2
 import ZynAddSubFX 1.0
 import "qrc:/qml/"
 
+Blank {
 VLayout {
+anchors.fill: parent
     Module {
         label: "amplitude"
         AltKnob {
@@ -26,9 +28,12 @@ VLayout {
         }
         Button {
             label: "frcr"
+            auto_aspect: true
         }
         Button {
             label: "l"
+            auto_aspect: true
         }
     }
+}
 }
