@@ -510,14 +510,14 @@ void drawHarmonicPlot(NVGcontext *vg, float *dat, int n, int x, int y, int w, in
 //------------------------------------------------------------------------------
 void drawVSlider(NVGcontext *vg, float val, int x, int y, int w, int h)
 {
-    nvgBeginPath(vg);
-    nvgRect(vg, x,y,w,h);
-    nvgFillColor(vg, nvgRGBA(0x0d,0x0d,0x0d,255));
-    nvgFill(vg);
-
     float pos[4] = {(float)x,(float)y,(float)w,(float)h};
     boarder(0.1*w, pos);
     float cy = y+h/2;
+
+    nvgBeginPath(vg);
+    nvgRect(vg, SPLAT(pos));
+    nvgFillColor(vg, nvgRGBA(0x0d,0x0d,0x0d,255));
+    nvgFill(vg);
 
     //fill color
     nvgBeginPath(vg);
