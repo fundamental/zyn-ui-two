@@ -1,6 +1,8 @@
 #pragma once
 #include "zWidget.h"
+#include "zImplicitLabel.h"
 #include "../layout.h"
+#include <QMap>
 #include <cassert>
 
 class zLayout:public zWidget
@@ -23,12 +25,16 @@ public slots:
         int layout_pars  = LAYOUT_NONE;
         if(m_vertical)
             layout_pars |= LAYOUT_VERT;
+        if(!implicitChildren.empty())
+            layout_pars |= LAYOUT_LABELS;
         layout_t layout = layoutCreate(layout_pars);
         for(int i=0; i<childItems().size(); ++i)
         {
             QObject *obj = childItems()[i];
             //printf("layout = '%s'\n", obj->metaObject()->className());
             if(QString("QQuickRepeater") == obj->metaObject()->className())
+                continue;
+            if(QString("zImplicitLabel") == obj->metaObject()->className())
                 continue;
             QVariant aspect_ = obj->property("aspect");
             QVariant scale_ = obj->property("zscale");
@@ -55,17 +61,29 @@ public slots:
             QQuickItem *obj = dynamic_cast<QQuickItem*>(childItems()[i]);
             if(QString("QQuickRepeater") == obj->metaObject()->className())
                 continue;
+            if(QString("zImplicitLabel") == obj->metaObject()->className())
+                continue;
             float pos[4];
             layoutGet(layout, j++, pos);
             obj->setX(pos[0]);
             obj->setY(pos[1]);
             obj->setWidth(pos[2]);
             obj->setHeight(pos[3]);
+            if(labelBoxes.contains(obj) && labelBoxes[obj]) {
+                obj = labelBoxes[obj];
+                layoutGetLabel(layout, j-1, pos);
+                obj->setX(pos[0]);
+                obj->setY(pos[1]);
+                obj->setWidth(pos[2]);
+                obj->setHeight(pos[3]);
+            }
         }
     }
     virtual void paint(NVGcontext *vg){};
 protected:
     virtual float layoutY() const {return 0.0f;};
     virtual float layoutH() const {return height();};
+    QList<QQuickItem*> implicitChildren;
+    QMap<QQuickItem *, class zImplicitLabel *> labelBoxes;
     bool m_vertical;
 };

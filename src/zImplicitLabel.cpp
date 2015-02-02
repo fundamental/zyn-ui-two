@@ -1,10 +1,10 @@
 #include "zImplicitLabel.h"
 
-zImplicitLabel::zImplicitLabel()
+zImplicitLabel::zImplicitLabel(QQuickItem *parent)
+    :zWidget(parent)
 {}
 
 void zImplicitLabel::paint(NVGcontext *vg)
 {
-    drawButton(vg, getLabel().c_str(), 0, 0, width(), height());
-    m_zaspect = textAspect(vg, getLabel().c_str());
+    drawLabel(vg, getLabel().c_str(), 0, 0, width(), height());
 }

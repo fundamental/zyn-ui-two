@@ -2,7 +2,7 @@
 #include <QtQuick/qquickwindow.h>
 
 zKnob::zKnob()
-    :m_t(0)
+    :m_t(rand()*1.0/RAND_MAX)
 {}
 
 void zKnob::setT(qreal t)

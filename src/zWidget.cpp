@@ -8,9 +8,9 @@
 
 NVGcontext *initVG();
 
-zWidget::zWidget()
-    :m_zscale(1.0), m_zaspect(1.0), m_label(""),
-     m_zexpandable(false)
+zWidget::zWidget(QQuickItem *parent)
+    :QQuickItem(parent), m_zscale(1.0), m_zaspect(1.0),
+     m_label(""), m_zexpandable(false)
 {
     connect(this, SIGNAL(windowChanged(QQuickWindow*)), this, SLOT(handleWindowChanged(QQuickWindow*)));
 }

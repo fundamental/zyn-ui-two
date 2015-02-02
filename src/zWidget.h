@@ -12,8 +12,9 @@ class zWidget:public QQuickItem
     Q_PROPERTY(bool  expandable MEMBER m_zexpandable);
     Q_PROPERTY(QString label MEMBER m_label);
 public:
-    zWidget();
+    zWidget(QQuickItem *parent=0);
     virtual ~zWidget(){};
+    std::string getLabel() const;
 
 public slots:
     virtual void abstractPaint();
@@ -21,7 +22,6 @@ public slots:
     void handleWindowChanged(QQuickWindow *win);
     void handleSync();
 protected:
-    std::string getLabel() const;
     qreal m_zscale, m_zaspect;
     QString m_label;
     bool m_zexpandable;
