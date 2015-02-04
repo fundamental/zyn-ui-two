@@ -1,0 +1,6 @@
+HLayout {
+    PartList {}
+    VLayout {
+    }
+    ScaleSettings {}
+}

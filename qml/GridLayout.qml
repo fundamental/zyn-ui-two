@@ -8,28 +8,20 @@ Item {
     onHeightChanged: performLayout()
     onXChanged: performLayout()
     onYChanged: performLayout()
-    
-    property variant weights: [1.0]
+    property variant cols: -1
+    property variant rows: -1
 
     function performLayout() {
         var currentX = 0
         var N = layout.children.length
-        
-        var iWeights = weights;
-        if(iWeights.length != N) {
-            iWeights = []
-            for (var i = 0; i < N; ++i) {
-                iWeights.push(1.0/N)
-            }
-        }
 
         for (var i = 0; i < N; ++i) {
             var obj = layout.children[i]
             obj.x      = currentX
             obj.y      = 0
-            obj.width  = layout.width*iWeights[i]
+            obj.width  = layout.width/N
             obj.height = layout.height
-            currentX  += layout.width*iWeights[i]
+            currentX  += layout.width/N
         }
     }
 }

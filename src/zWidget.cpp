@@ -26,6 +26,11 @@ void zWidget::handleWindowChanged(QQuickWindow *win)
 
 void zWidget::handleSync()
 {
+    static long syncCount = 0;
+    syncCount++;
+    //printf("handleSync %ld: '%s'{%s}(%s)\n", syncCount,
+    //        metaObject()->className(), m_label.toLatin1().data(),
+    //        parentItem()->metaObject()->className());
     //printf("%p %p %p %d\n", this, parentItem(), window()->contentItem(),
     //        parentItem()-window()->contentItem());
     if(parentItem() == window()->contentItem())  {

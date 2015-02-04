@@ -4,6 +4,7 @@ import "qrc:/qml/"
 
 HSlider {
     id: slider
+    property variant text: -1
     function updateValue(norm_dy)
     {
         var tmp = slider.t - norm_dy

@@ -6,8 +6,5 @@ zBox::zBox()
 
 void zBox::paint(NVGcontext *vg)
 {
-    const char *label = "Button";
-    if(!m_label.isEmpty())
-        label = m_label.toLatin1().data();
-    drawToggleBox(vg, label, 0, 0, width(), height());
+    drawToggleBox(vg, getLabel().c_str(), 0, 0, width(), height());
 }

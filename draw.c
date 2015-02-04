@@ -183,12 +183,14 @@ void drawButtonGrid(NVGcontext *vg, int n, int m, int x, int y, int w, int h)
     float W=w*1.0/n;
     float H=h*1.0/m;
 
+    char buf[8] = {0};
     int cnt = 0;
     for(int i=0; i<n; ++i) {
         for(int j=0; j<m; ++j) {
             int xx = x+0.05*W + W*i;
             int yy = y+0.05*H + H*j;
-            drawButtonScale(vg, 0.9, "0", xx, yy, 0.9*W, 0.9*H);
+            snprintf(buf, 7, "%d", ++cnt);
+            drawButtonScale(vg, 0.9, buf, xx, yy, 0.9*W, 0.9*H);
         }
     }
 }
@@ -748,7 +750,7 @@ void drawModuleBox(NVGcontext *vg, const char *str, int x, int y, int w, int h)
 
     {
         //SMAP(pos_);
-        float innerspace[4] = {x, y+h*0.2f, w, h*0.8f};
+        float innerspace[4] = {(float)x, y+h*0.2f, (float)w, h*0.8f};
         boarder(h*0.01, innerspace);
         //paint the inner panel
         nvgBeginPath(vg);
@@ -757,6 +759,40 @@ void drawModuleBox(NVGcontext *vg, const char *str, int x, int y, int w, int h)
         nvgFill(vg);
         //inner.draw(innerspace);
     }
+}
+//------------------------------------------------------------------------------
+void drawKeyboard(NVGcontext *vg, int x, int y, int w, int h)
+{
+    const int white_keys = 8*7+2;
+    const int black_pattern[] = {1,0,1,1,0,1,1};
+
+    //draw the white keys 7 octaves + 2
+    for(int i=0; i<white_keys; ++i) {
+        float box[4] = {(float)x+i*w*1.0f/(white_keys-1),
+            (float)y, w*1.0f/(white_keys), (float)h};
+        pad(0.9, box);
+        nvgBeginPath(vg);
+        nvgRect(vg, SPLAT(box));
+        nvgFillColor(vg, nvgRGBA(0xff, 0xff, 0xff, 255));
+        nvgFill(vg);
+    }
+
+    //draw the black keys at the joints
+    for(int i=0; i<white_keys; ++i) {
+        if(!black_pattern[i%8])
+            continue;
+        float box[4] = {(float)x+(i+0.5f)*w*1.0f/(white_keys-1),
+            (float)y, w*1.0f/(white_keys), (float)h*0.7f};
+        pad(0.9, box);
+        nvgBeginPath(vg);
+        nvgRect(vg, SPLAT(box));
+        nvgFillColor(vg, nvgRGBA(0x00, 0x00, 0x00, 255));
+        nvgFill(vg);
+    }
+}
+int  getKeyboardKey(int x, int y, int w, int h)
+{
+    return -1;
 }
 //------------------------------------------------------------------------------
 

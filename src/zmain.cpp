@@ -29,6 +29,8 @@
 #include "zTextField.h"
 #include "zModule.h"
 #include "zHarmonics.h"
+#include "zSelector.h"
+#include "zKeyboard.h"
 #include "zDummy.h"
 
 
@@ -76,6 +78,8 @@ int main(int argc, char *argv[])
     qmlRegisterType<zTextField>("ZynAddSubFX", 1, 0, "TextField");
     qmlRegisterType<zModule>("ZynAddSubFX", 1, 0, "Module");
     qmlRegisterType<zHarmonics>("ZynAddSubFX", 1, 0, "Harmonics");
+    qmlRegisterType<zSelector>("ZynAddSubFX", 1, 0, "Selector");
+    qmlRegisterType<zKeyboard>("ZynAddSubFX", 1, 0, "Keyboard");
 
     //Unimplemented
     qmlRegisterType<zDummy>("ZynAddSubFX", 1, 0, "Div");
