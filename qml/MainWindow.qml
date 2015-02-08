@@ -14,29 +14,37 @@ Blank {
         }
         HLayout {
             weights: [0.1,0.9]
-            VLayout {
-                Box {label: "part settings"}
+            ZLayout {
+                vertical: true
+                Box {
+                    label: "part settings"
+                    aspect: 0.3
+                    zscale:  0.3
+                }
                 SelectorGrid { n: 16}
-                Box {label: "browser"}
-                Box {label: "mixer"}
-                Box {label: "kit editor"}
+                    
+                Box {label: "browser";aspect: 0.3; zscale:  0.3}
+                Box {label: "mixer";aspect: 0.3; zscale:  0.3}
+                Box {label: "kit editor";aspect: 0.3; zscale:  0.3}
                 SelectorGrid { n: 16 }
-                Box {label: "arp"}
-                Box {label: "effects"}
-                Box {label: "adsynth"}
+                Box {label: "arp";aspect: 0.3; zscale:  0.3}
+                Box {label: "effects";aspect: 0.3; zscale:  0.3}
+                Box {label: "adsynth";aspect: 0.3; zscale:  0.3}
                 SelectorGrid {
                     n: 8
                     label: "voices"
                 }
-                Box {label: "subsynth"}
-                Box {label: "padsynth"}
+                Box {label: "subsynth";aspect: 0.3; zscale:  0.3}
+                Box {label: "padsynth";aspect: 0.3; zscale:  0.3}
             }
             AdVoice {}
         }
-        HLayout {
-            weights: [0.05,0.55,0.05,0.05,0.05,0.05,0.05,0.05,0.1]
+        ZLayout {
             ModWheel {}
-            Keyboard {}
+            Keyboard {
+                property variant aspect: 1.0/15.5
+                property variant zscale: 1
+            }
             Knob {label: "velocity"}
             Knob {label: "vrand"}
             Knob {label: "octave"}

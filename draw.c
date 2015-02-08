@@ -773,7 +773,7 @@ void drawKeyboard(NVGcontext *vg, int x, int y, int w, int h)
         pad(0.9, box);
         nvgBeginPath(vg);
         nvgRect(vg, SPLAT(box));
-        nvgFillColor(vg, nvgRGBA(0xff, 0xff, 0xff, 255));
+        nvgFillColor(vg, nvgRGBA(0xaa, 0xaa, 0xaa, 255));
         nvgFill(vg);
     }
 
@@ -786,7 +786,7 @@ void drawKeyboard(NVGcontext *vg, int x, int y, int w, int h)
         pad(0.9, box);
         nvgBeginPath(vg);
         nvgRect(vg, SPLAT(box));
-        nvgFillColor(vg, nvgRGBA(0x00, 0x00, 0x00, 255));
+        nvgFillColor(vg, nvgRGBA(0x0C, 0x0C, 0x0C, 255));
         nvgFill(vg);
     }
 }
