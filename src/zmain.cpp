@@ -31,6 +31,7 @@
 #include "zHarmonics.h"
 #include "zSelector.h"
 #include "zKeyboard.h"
+#include "zGrid.h"
 #include "zDummy.h"
 
 
@@ -80,6 +81,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<zHarmonics>("ZynAddSubFX", 1, 0, "Harmonics");
     qmlRegisterType<zSelector>("ZynAddSubFX", 1, 0, "Selector");
     qmlRegisterType<zKeyboard>("ZynAddSubFX", 1, 0, "Keyboard");
+    qmlRegisterType<zGrid>("ZynAddSubFX", 1, 0, "ZGrid");
 
     //Unimplemented
     qmlRegisterType<zDummy>("ZynAddSubFX", 1, 0, "Div");

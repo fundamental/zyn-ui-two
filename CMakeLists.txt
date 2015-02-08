@@ -17,7 +17,7 @@ include_directories(${QT_HEADERS_DIR})
 add_definitions(${QT_DEFINITIONS})
 
 add_executable(helloqml ${helloqml_SRC} 
-                        draw.c layout.cpp nanovg/nanovg.c
+                        draw.c layout.cpp grid.c nanovg/nanovg.c
                         ${helloqml_HEADERS_MOC}
                         ${helloqml_RESOURCES_RCC})
 
