@@ -32,6 +32,8 @@
 #include "zSelector.h"
 #include "zKeyboard.h"
 #include "zGrid.h"
+#include "zLogo.h"
+#include "zBackground.h"
 #include "zDummy.h"
 
 
@@ -82,6 +84,8 @@ int main(int argc, char *argv[])
     qmlRegisterType<zSelector>("ZynAddSubFX", 1, 0, "Selector");
     qmlRegisterType<zKeyboard>("ZynAddSubFX", 1, 0, "Keyboard");
     qmlRegisterType<zGrid>("ZynAddSubFX", 1, 0, "ZGrid");
+    qmlRegisterType<zLogo>("ZynAddSubFX", 1, 0, "Logo");
+    qmlRegisterType<zBackground>("ZynAddSubFX", 1, 0, "Background");
 
     //Unimplemented
     qmlRegisterType<zDummy>("ZynAddSubFX", 1, 0, "Div");

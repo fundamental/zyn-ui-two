@@ -17,6 +17,7 @@ void drawLeftLabel(NVGcontext *vg, const char *str, int x, int y, int w, int h);
 void drawDialValue(NVGcontext *vg, int val, int x, int y, int w, int h);
 void drawBox(NVGcontext *vg, int x, int y, int w, int h);
 void drawButton(NVGcontext *vg, const char *str, int x, int y, int w, int h);
+void drawRelaxedButton(NVGcontext *vg, const char *str, int x, int y, int w, int h);
 void drawOptButton(NVGcontext *vg, const char *str, int x, int y, int w, int h);
 void drawButtonGrid(NVGcontext *vg, int n, int m, int x, int y, int w, int h);
 void drawGrid(NVGcontext *vg, int n, int m, int x, int y, int w, int h);

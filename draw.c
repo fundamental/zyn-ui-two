@@ -146,6 +146,36 @@ void drawButton(NVGcontext *vg, const char *str, int x, int y, int w, int h)
 {
     drawButtonScale(vg, 0.6, str, x,y,w,h);
 }
+//------------------------------------------------------------------------------
+
+void drawRelaxedButton(NVGcontext *vg, const char *str, int x, int y, int w, int h)
+{
+    NVGpaint grad = nvgLinearGradient(vg, x, y, x, y+h,
+            nvgRGBA(0x47,0x47,0x47,255),
+            nvgRGBA(0x32,0x32,0x32,255));
+    nvgStrokeColor(vg, nvgRGBA(0,0,0,12));
+    nvgBeginPath(vg);
+    nvgRect(vg, x,y,w,h);
+    nvgFillPaint(vg, grad);
+    nvgStroke(vg);
+    nvgFill(vg);
+
+    float scale = 0.8;
+
+    nvgFontSize(vg, h*scale);
+    nvgFontFace(vg, "sans");
+#
+    nvgFillColor(vg, nvgRGBA(0x00,0xe0,0xcc, 255));
+
+    nvgTextAlign(vg,NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);
+
+    float bounds[4];
+    nvgTextBounds(vg, x,y, str, NULL, bounds);
+    if((bounds[2]-bounds[0]) > w) //horizontally constrained case
+        nvgFontSize(vg, h*scale*w*1.0/(bounds[2]-bounds[0]));
+
+    nvgText(vg, x+w/2,y+h*0.5f,str, NULL);
+}
 
 //------------------------------------------------------------------------------
 void drawOptButton(NVGcontext *vg, const char *str, int x, int y, int w, int h)

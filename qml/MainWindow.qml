@@ -2,7 +2,7 @@ import QtQuick 2.2
 import ZynAddSubFX 1.0
 import "qrc:/qml/"
 
-Blank {
+Background {
     VLayout {
         anchors.fill: parent
         weights: [0.1,0.8,0.1]
@@ -16,26 +16,27 @@ Blank {
             weights: [0.1,0.9]
             ZLayout {
                 vertical: true
-                Box {
+                Button {
                     label: "part settings"
+                    renderer: "relaxed"
                     aspect: 0.3
                     zscale:  0.3
                 }
                 SelectorGrid { n: 16}
                     
-                Box {label: "browser";aspect: 0.3; zscale:  0.3}
-                Box {label: "mixer";aspect: 0.3; zscale:  0.3}
-                Box {label: "kit editor";aspect: 0.3; zscale:  0.3}
+                Button {label: "browser";renderer: "relaxed";aspect: 0.3; zscale:  0.3}
+                Button {label: "mixer";renderer: "relaxed";aspect: 0.3; zscale:  0.3}
+                Button {label: "kit editor";renderer: "relaxed";aspect: 0.3; zscale:  0.3}
                 SelectorGrid { n: 16 }
-                Box {label: "arp";aspect: 0.3; zscale:  0.3}
-                Box {label: "effects";aspect: 0.3; zscale:  0.3}
-                Box {label: "adsynth";aspect: 0.3; zscale:  0.3}
+                Button {label: "arp";renderer: "relaxed";aspect: 0.3; zscale:  0.3}
+                Button {label: "effects";renderer: "relaxed";aspect: 0.3; zscale:  0.3}
+                Button {label: "adsynth";renderer: "relaxed";aspect: 0.3; zscale:  0.3}
                 SelectorGrid {
                     n: 8
                     label: "voices"
                 }
-                Box {label: "subsynth";aspect: 0.3; zscale:  0.3}
-                Box {label: "padsynth";aspect: 0.3; zscale:  0.3}
+                Button {label: "subsynth";renderer: "relaxed";aspect: 0.3; zscale:  0.3}
+                Button {label: "padsynth";renderer: "relaxed";aspect: 0.3; zscale:  0.3}
             }
             AdVoice {}
         }
