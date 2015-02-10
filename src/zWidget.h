@@ -1,5 +1,6 @@
 #pragma once
 #include <QtQuick/QQuickItem>
+#include <QRectF>
 #include "../draw.h"
 
 struct NVGcontext;
@@ -15,9 +16,10 @@ public:
     zWidget(QQuickItem *parent=0);
     virtual ~zWidget(){};
     std::string getLabel() const;
+    void tryDamage(QQuickItem *);
 
 public slots:
-    virtual void abstractPaint();
+    virtual void abstractPaint(QRectF);
     virtual void paint(NVGcontext *vg)=0;
     void handleWindowChanged(QQuickWindow *win);
     void handleSync();
@@ -25,4 +27,5 @@ protected:
     qreal m_zscale, m_zaspect;
     QString m_label;
     bool m_zexpandable;
+    QRectF m_damage;
 };
