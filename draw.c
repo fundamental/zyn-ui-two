@@ -719,11 +719,55 @@ void drawPowLabel(NVGcontext *vg, int x, int y, int w, int h)
     nvgStroke(vg);
 }
 //------------------------------------------------------------------------------
-void drawPowButton(NVGcontext *vg, int x, int y, int w, int h)
+void drawPowerButton(NVGcontext *vg, int x, int y, int w, int h)
 {
     drawBox(vg, x, y, w, h);
     nvgStrokeColor(vg, nvgRGBA(0x00,0xcf,0xf7,255));
     drawPowLabel(vg, x, y, w, h);
+}
+//------------------------------------------------------------------------------
+void drawPanicButton(NVGcontext *vg, int x, int y, int w, int h)
+{
+    drawBox(vg, x, y, w, h);
+    //nvgStrokeColor(vg, nvgRGBA(0x00,0xcf,0xf7,255));
+    //drawPowLabel(vg, x, y, w, h);
+}
+//------------------------------------------------------------------------------
+void drawStopButton(NVGcontext *vg, int x, int y, int w, int h)
+{
+    drawBox(vg, x, y, w, h);
+    float bb[4] = {(float)x, (float)y, (float)w, (float)h};
+    square(pad(0.5, bb));
+    nvgBeginPath(vg);
+    nvgRect(vg, SPLAT(bb));
+    nvgFillColor(vg, nvgRGBA(0x00,0xcf,0xf7,255));
+    nvgFill(vg);
+    //nvgStrokeColor(vg, nvgRGBA(0x00,0xcf,0xf7,255));
+    //drawPowLabel(vg, x, y, w, h);
+}
+//------------------------------------------------------------------------------
+void drawPauseButton(NVGcontext *vg, int x, int y, int w, int h)
+{
+    drawBox(vg, x, y, w, h);
+    float bb[4] = {(float)x, (float)y, (float)w, (float)h};
+    square(pad(0.5, bb));
+    nvgFillColor(vg, nvgRGBA(0x00,0xcf,0xf7,255));
+    nvgBeginPath(vg);
+    nvgRect(vg, bb[0],        bb[1],bb[2]/4,bb[3]);
+    nvgFill(vg);
+    nvgBeginPath(vg);
+    nvgRect(vg, bb[0]+bb[2]/2,bb[1],bb[2]/4,bb[3]);
+    nvgFill(vg);
+}
+void drawRecButton(NVGcontext *vg, int x, int y, int w, int h)
+{
+    drawBox(vg, x, y, w, h);
+    float bb[4] = {(float)x, (float)y, (float)w, (float)h};
+    square(pad(0.5, bb));
+    nvgFillColor(vg, nvgRGBA(0x00,0xcf,0xf7,255));
+    nvgBeginPath(vg);
+    nvgCircle(vg, bb[0]+bb[2]/2, bb[1]+bb[3]/2,bb[2]/2);
+    nvgFill(vg);
 }
 //------------------------------------------------------------------------------
 void drawToggleBox(NVGcontext *vg, const char *str, int x, int y, int w, int h)
@@ -854,6 +898,18 @@ float *boarder(float scale, float *bb)
     bb[1] += scale;
     bb[2] -= 2*scale;
     bb[3] -= 2*scale;
+    return bb;
+}
+
+float *square(float *bb)
+{
+    float cx = bb[0]+bb[2]/2;
+    float cy = bb[1]+bb[3]/2;
+    float d  = (bb[2]<bb[3]?bb[2]:bb[3])/2;
+    bb[0] = cx-d;
+    bb[1] = cy-d;
+    bb[2] = 2*d;
+    bb[3] = 2*d;
     return bb;
 }
 

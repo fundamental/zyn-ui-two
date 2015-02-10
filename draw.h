@@ -34,7 +34,11 @@ void drawHZSlider(NVGcontext *vg, float val, int x, int y, int w, int h);
 void drawVZSlider(NVGcontext *vg, float val, int x, int y, int w, int h);
 void drawOscArray(NVGcontext *vg, int x, int y, int w, int h);
 void drawPowLabel(NVGcontext *vg, int x, int y, int w, int h);
-void drawPowButton(NVGcontext *vg, int x, int y, int w, int h);
+void drawPowerButton(NVGcontext *vg, int x, int y, int w, int h);
+void drawPanicButton(NVGcontext *vg, int x, int y, int w, int h);
+void drawStopButton(NVGcontext *vg, int x, int y, int w, int h);
+void drawPauseButton(NVGcontext *vg, int x, int y, int w, int h);
+void drawRecButton(NVGcontext *vg, int x, int y, int w, int h);
 void drawToggleBox(NVGcontext *vg, const char *str, int x, int y, int w, int h);
 void drawModuleBox(NVGcontext *vg, const char *str, int x, int y, int w, int h);
 void drawKeyboard(NVGcontext *vg, int x, int y, int w, int h);
@@ -54,6 +58,7 @@ void renderDial(NVGcontext *vg, dial_t dial);
 //General Geometry
 float *pad(float scale, float *bb);
 float *boarder(float scale, float *bb);
+float *square(float *bb);
 
 float textAspect(NVGcontext *vg, const char *text);
 #ifdef __cplusplus

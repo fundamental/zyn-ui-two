@@ -6,5 +6,5 @@ zPowButton::zPowButton()
 
 void zPowButton::paint(NVGcontext *vg)
 {
-    drawPowButton(vg, 0, 0, width(), height());
+    drawPowerButton(vg, 0, 0, width(), height());
 }
