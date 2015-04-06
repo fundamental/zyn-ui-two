@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cassert>
 #include <cstdlib>
+#include <string>
 
 #define CONSTRAINT_EQ 0
 #define CONSTRAINT_LE 1
@@ -20,7 +21,7 @@ class Constraint
         bool                     active;
         bool                     satisfied;
         int                      id;
-        unsigned unknowns() const;
+        unsigned size() const {return v.size();}
         bool       canSimplify(Constraint &c);
         Constraint simplify(Constraint &c);
         bool isTrivialLowerBound();
@@ -55,6 +56,8 @@ class Constraint
             }
         }
 
+        void dump(const char *prefix);
+
         bool isConstOnly();
 };
 
@@ -72,15 +75,13 @@ class Variable
 
         int priority; //0 low, 1 normal
         int id;
+        std::string name;
 
         Variable *alias;//Pointer to variable that actually solves problem
 
-        int sign(float t) {
-            return t<0?-1:(t>0?+1:0);
-        }
-
         void solve(float s)
         {
+            //assert(id != 41);
             solution = s;
             solved   = true;
             for(int i=0; i<c.size(); ++i)
@@ -132,12 +133,18 @@ class Variable
         //True if b is redundant if a exists
         bool redundantBound(Constraint &a, Constraint &b)
         {
-            if(a.v.size() == 1 && b.v.size() == 1 &&
-                    a.v[0] == b.v[0] && a.scale[0] == b.scale[0])
+            if(a.size() != b.size() || a.type != b.type)
+                return false;
+            if(a.size() == 1 && a.v[0] == b.v[0] && a.scale[0] == b.scale[0])
                 return true;
-            if(a.v.size() == 1 && b.v.size() == 1 && a.type == b.type &&
-                    a.type == 1 && a.v[0] == b.v[0] && a.scale[0] <= b.scale[0])
-                return true;
+            if(a.type == CONSTRAINT_LE) {
+                bool all = true;
+                for(int i=0; i<a.size(); ++i)
+                    if(a.v[i] != b.v[i] || a.scale[i] > b.scale[i])
+                        all = false;
+                if(all)
+                    return true;
+            }
             return false;
         }
 
@@ -180,11 +187,25 @@ class Variable
             //In case where there is only one usable max rule
             //consisting of a constant and lower priority variables
             Constraint *rule = NULL;
-            for(int i=0; i<(int)c.size(); ++i)
-                if(c[i]->type == 1)
-                    rule = c[i];
+            Constraint *unhandled_eq = NULL;
+            for(int i=0; i<(int)c.size(); ++i) {
+                if(c[i]->type == 1) {
+                    if(!rule)
+                        rule = c[i];
+                    else {
+                        printf("Weird maximization criteria\n");
+                        //rule->dump("OLD:");
+                        //c[i]->dump("NEW:");
+                        if(rule->scale[0] > c[i]->scale[0])
+                            rule = c[i];
+                    }
+                } else if(c[i]->type == CONSTRAINT_EQ) {
+                    unhandled_eq = c[i];
+                    unhandled_eq->dump("Possible issue:");
+                }
+            }
 
-            if(!rule)
+            if(!rule || unhandled_eq)
                 return;
             for(int i=0; i<rule->v.size(); ++i)
                 if(rule->v[i]->id == 0)
@@ -265,9 +286,14 @@ class Variable
             }
         }
 
+        int sign(float t) {
+            return t<0?-1:(t>0?+1:0);
+        }
+
         void dump(const char *prefix)
         {
-            printf("%sVariable %d: [", prefix, id);
+            return;
+            printf("%sVariable %d<%s>: [", prefix, id, name.c_str());
             if(solved)
                 printf("solved<%f>,", solution);
             if(is_fixed)
@@ -275,43 +301,7 @@ class Variable
             printf("priority<%d>]\n", priority);
 
             for(int i=0; i<(int)c.size(); ++i) {
-                auto &cc = *c[i];
-                if(!cc.active)
-                    continue;
-                const char *op = cc.type == 0 ? "===" : cc.type == 1 ? "<=" : ">=";
-                printf("%s%s%%%d %s ", prefix, prefix, id, op);
-                for(int j=0; j<cc.v.size(); ++j) {
-                    if(j!=0) {
-                        if(cc.scale[j] == 1) {
-                            printf(" + ");
-                            cc.v[j]->printName(true);
-                        } else if(cc.scale[j] == -1) {
-                            printf(" - ");
-                            cc.v[j]->printName(true);
-                        } else if(sign(cc.scale[j]) >= 0) {
-                            printf(" + %f", cc.scale[j]);
-                            cc.v[j]->printName(false);
-                        } else {
-                            printf(" - %f", -cc.scale[j]);
-                            cc.v[j]->printName(false);
-                        }
-                    } else if(cc.scale[j] == 1) {
-                            cc.v[j]->printName(true);
-                    } else if(cc.scale[j] == -1) {
-                            printf("-");
-                            cc.v[j]->printName(true);
-                    } else if(sign(cc.scale[j]) == 0) {
-                        printf("0");
-                    } else {
-                        printf("%f", cc.scale[j]);
-                        cc.v[j]->printName(false);
-                    }
-                }
-                if(cc.isConstOnly())
-                    printf(" [c]");
-                if(cc.isScalarEquality())
-                    printf(" [s]");
-                printf("\n");
+                c[i]->dump(prefix);
             }
         }
 
@@ -357,6 +347,56 @@ bool Constraint::isScalarEquality()
     return type == 0 && v.size() == 1;
 }
 
+
+int sign(float t) {
+    return t<0?-1:(t>0?+1:0);
+}
+void Constraint::dump(const char *prefix)
+{
+    auto &cc = *this;
+    if(!cc.active)
+        return;
+    const char *op = cc.type == 0 ? "===" : cc.type == 1 ? "<=" : ">=";
+    int id = -1;
+    if(constrained)
+        id = constrained->id;
+    printf("%s%s%%%d %s ", prefix, prefix, id, op);
+    for(int j=0; j<cc.v.size(); ++j) {
+        if(j!=0) {
+            if(cc.scale[j] == 1) {
+                printf(" + ");
+                cc.v[j]->printName(true);
+            } else if(cc.scale[j] == -1) {
+                printf(" - ");
+                cc.v[j]->printName(true);
+            } else if(sign(cc.scale[j]) >= 0) {
+                printf(" + %f", cc.scale[j]);
+                cc.v[j]->printName(false);
+            } else {
+                printf(" - %f", -cc.scale[j]);
+                cc.v[j]->printName(false);
+            }
+        } else if(cc.scale[j] == 1) {
+            cc.v[j]->printName(true);
+        } else if(cc.scale[j] == -1) {
+            printf("-");
+            cc.v[j]->printName(true);
+        } else if(sign(cc.scale[j]) == 0) {
+            printf("0");
+        } else {
+            printf("%f", cc.scale[j]);
+            cc.v[j]->printName(false);
+        }
+    }
+    if(cc.isConstOnly())
+        printf(" [c]");
+    if(cc.isScalarEquality())
+        printf(" [s]");
+    if(cc.active)
+        printf(" [a]");
+    printf("\n");
+}
+
 class BBox
 {
     public:
@@ -399,6 +439,7 @@ class LayoutProblem
         void passTransferSolvedConstraints();
         void passSolveBasicAlgebra();
         void passDedup();
+        void passTighten();
 
         void check_solution();
         void dump();
@@ -418,10 +459,10 @@ void LayoutProblem::addVariable(Variable *v)
 class Constant: public Variable
 {
     public:
-    Constant()
-    {
-        id = 0;
-    }
+        Constant()
+        {
+            id = 0;
+        }
 };
 
 Constant *Const = new Constant();
@@ -448,6 +489,10 @@ void LayoutProblem::addBoxVars()
         auto &b = *box[i];
         if(b.parent) {
             auto &p = *b.parent;
+            b.x.name = "x";
+            b.y.name = "y";
+            b.w.name = "w";
+            b.h.name = "h";
             b.x.priority = 100;
             b.y.priority = 100;
             b.w.priority = 200;
@@ -513,14 +558,14 @@ void LayoutProblem::depSolve()
         }
     }
 
-    for(int j=0; j<N; ++j) {
-        printf("%2d",j+1);
-        for(int k=0; k<N; ++k) {
-            int c = corr_matrix[j*N+k];
-            printf(c==-1?"-":c==1?"+":(c==2||c==-2)?"?":"_");
-        }
-        printf("\n");
-    }
+    //for(int j=0; j<N; ++j) {
+    //    printf("%2d",j+1);
+    //    for(int k=0; k<N; ++k) {
+    //        int c = corr_matrix[j*N+k];
+    //        printf(c==-1?"-":c==1?"+":(c==2||c==-2)?"?":"_");
+    //    }
+    //    printf("\n");
+    //}
 
     for(int i=0; i<N; ++i) {
         for(int j=0; j<N; ++j) {
@@ -543,21 +588,21 @@ void LayoutProblem::depSolve()
                     //printf("neg corr    [%d,%d] onto [%d,%d]",i+1,k+1,j+1,k+1);
                     corr_matrix[i*N+k] =
                         confuse_merge(corr_matrix[i*N+k], -corr_matrix[j*N+k]);
-                corr_matrix[k*N+i] = corr_matrix[i*N+k] =
-                    confuse_merge(corr_matrix[i*N+k], corr_matrix[k*N+i]);
+                    corr_matrix[k*N+i] = corr_matrix[i*N+k] =
+                        confuse_merge(corr_matrix[i*N+k], corr_matrix[k*N+i]);
                 }
             }
         }
     }
 
-    for(int j=0; j<N; ++j) {
-        printf("%2d",j+1);
-        for(int k=0; k<N; ++k) {
-            int c = corr_matrix[j*N+k];
-            printf(c==-1?"-":c==1?"+":(c==2||c==-2)?"?":"_");
-        }
-        printf("\n");
-    }
+    //for(int j=0; j<N; ++j) {
+    //    printf("%2d",j+1);
+    //    for(int k=0; k<N; ++k) {
+    //        int c = corr_matrix[j*N+k];
+    //        printf(c==-1?"-":c==1?"+":(c==2||c==-2)?"?":"_");
+    //    }
+    //    printf("\n");
+    //}
 
     for(int i=0; i<N; ++i) {
         if(var[i]->solved || var[i]->is_fixed)
@@ -589,7 +634,7 @@ void LayoutProblem::passReduceWithSolved()
             for(int j=0; j<(int)var.size(); ++j)
                 var[j]->reduceWithSolved(var[i]);
 }
-    
+
 //Invert trivial lower bounds
 //(%x >= %y) -> (%y <= %x)
 void LayoutProblem::passInvertTrivialBounds()
@@ -644,6 +689,17 @@ void LayoutProblem::passTransferSolvedConstraints()
                 cc.v[0]->addConstraint(CONSTRAINT_EQ, 
                         1/cc.scale[0], var[i]);
                 var[i]->c.erase(var[i]->c.begin()+j);
+            } else if(cc.v.size() == 2 && cc.v[0]->id == 0 && cc.v[1]->id != 0 &&
+                    cc.type == CONSTRAINT_LE && cc.scale[1] < 0) 
+            {
+                printf("Making a new Transfered Solution Constraint(%f)...\n",
+                        var[i]->solution);
+                cc.dump("OLD: ");
+                cc.v[1]->addConstraint(CONSTRAINT_LE, 
+                        -(cc.scale[0]-var[i]->solution)/cc.scale[1], cc.v[0]);
+                cc.v[1]->c[cc.v[1]->c.size()-1]->dump("NEW: ");
+                var[i]->c.erase(var[i]->c.begin()+j);
+
             }
             j--;
         }
@@ -670,6 +726,13 @@ void LayoutProblem::passDedup()
     }
 }
 
+void LayoutProblem::passTighten()
+{
+    for(int i=0; i<(int)var.size(); ++i) {
+        var[i]->removeRedundantBounds();
+    }
+}
+
 void LayoutProblem::solve()
 {
     //Solve Trivial Variables
@@ -688,7 +751,7 @@ void LayoutProblem::solve()
     //Propigate Solutions
     passReduceWithSolved();
     passInvertTrivialBounds();
-    
+
 
     printf("-------------------------------------------------\n");
     printf("--------Second Dep Solve Input-------------------\n");
@@ -703,8 +766,8 @@ void LayoutProblem::solve()
     passScalarVariableFixing();
     passTransferSolvedConstraints();
     passSolveBasicAlgebra();
-    
-    
+
+
     printf("-------------------------------------------------\n");
     printf("---------Third Dep Solve Input-------------------\n");
     printf("-------------------------------------------------\n");
@@ -713,6 +776,7 @@ void LayoutProblem::solve()
     depSolve();
 
     //Propigate Solutions
+    passReduceWithSolved();
     passScalarVariableFixing();
     passReduceWithSolved();
     passSolveTrivial();
@@ -720,6 +784,7 @@ void LayoutProblem::solve()
     passTransferSolvedConstraints();
     passSolveBasicAlgebra();
     passDedup();
+    passTighten();
 
     printf("-------------------------------------------------\n");
     printf("---------Fourth Dep Solve Input------------------\n");
@@ -729,6 +794,29 @@ void LayoutProblem::solve()
     depSolve();
     passSolveTrivial();
     
+    //Propigate
+    passTransferSolvedConstraints();
+    passSolveBasicAlgebra();
+    passScalarVariableFixing();
+    passReduceWithSolved();
+    passSolveTrivial();
+    passDisableInactive();
+    passTransferSolvedConstraints();
+    passSolveBasicAlgebra();
+    passDedup();
+    passTransferSolvedConstraints();
+    passTighten();
+    
+    printf("-------------------------------------------------\n");
+    printf("---------Fifth Dep Solve Input-------------------\n");
+    printf("-------------------------------------------------\n");
+    dump();
+    
+    depSolve();
+    passReduceWithSolved();
+    passTransferSolvedConstraints();
+    passSolveTrivial();
+
     //Find Any Case upper bounded by a known value
 
     //Find Any Case upper bounded by a known value and a minimal low priority

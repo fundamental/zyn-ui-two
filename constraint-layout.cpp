@@ -28,8 +28,8 @@ int main()
     //init pad params
     for(int i=0; i<9; ++i)
     {
-        padw[i].priority = 0;
-        padh[i].priority = 0;
+        padw[i].priority = 100;
+        padh[i].priority = 100;
     }
 
     for(int i=0; i<9; ++i)
@@ -39,19 +39,19 @@ int main()
         auto &child = children[i];
         child.parent = &top;
         if(row == 0) {
-            child.y.addConstraint(CONSTRAINT_EQ, 0, Const, 1, padh+i);
+            child.y.addConstraint(CONSTRAINT_EQ, 0, Const, 0.5, padh+i);
         } else if(row == 1){
-            child.y.addConstraint(CONSTRAINT_EQ, 1, &colWidth[0], 1, padh+i);
+            child.y.addConstraint(CONSTRAINT_EQ, 1, &colWidth[0], 0.5, padh+i);
         } else if(row == 2){
-            child.y.addConstraint(CONSTRAINT_EQ, 1, &colWidth[0], 1, &colWidth[1], 1, padh+i);
+            child.y.addConstraint(CONSTRAINT_EQ, 1, &colWidth[0], 1, &colWidth[1], 0.5, padh+i);
         }
         //child.y.addConstraint(CONSTRAINT_GE, 1, &children[i-3].y, 1, &children[i-3].h);
         if(col == 0) {
-            child.x.addConstraint(CONSTRAINT_EQ, 0, Const, 1, padw+i);
+            child.x.addConstraint(CONSTRAINT_EQ, 0, Const, 0.5, padw+i);
         } else if(col == 1){
-            child.x.addConstraint(CONSTRAINT_EQ, 1, &rowHeight[0], 1, padw+i);
+            child.x.addConstraint(CONSTRAINT_EQ, 1, &rowHeight[0], 0.5, padw+i);
         } else if(col == 2){
-            child.x.addConstraint(CONSTRAINT_EQ, 1, &rowHeight[0], 1, &rowHeight[1], 1, padw+i);
+            child.x.addConstraint(CONSTRAINT_EQ, 1, &rowHeight[0], 1, &rowHeight[1], 0.5, padw+i);
         } else {
         }
         //child.x.addConstraint(CONSTRAINT_GE, 1, &children[i-1].x, 1, &children[i-1].w);
@@ -82,17 +82,23 @@ int main()
     for(int i=0; i<9; ++i)
         prob.addBox(children[i]);
     prob.addBox(top);
-    for(int i=0; i<3; ++i)
+    for(int i=0; i<3; ++i) {
+        colWidth[i].name = "colwidth";
         prob.addVariable(&colWidth[i]);
-    for(int i=0; i<3; ++i)
+    }
+    for(int i=0; i<3; ++i) {
+        rowHeight[i].name = "rowheight";
         prob.addVariable(&rowHeight[i]);
-    for(int i=0; i<9; ++i) {
-        prob.addVariable(&padh[i]);
-        padh[i].solve(0.0);
     }
     for(int i=0; i<9; ++i) {
+        padh[i].name = "padh";
+        prob.addVariable(&padh[i]);
+        //padh[i].solve(0.0);
+    }
+    for(int i=0; i<9; ++i) {
+        padw[i].name = "padw";
         prob.addVariable(&padw[i]);
-        padw[i].solve(0.0);
+        //padw[i].solve(0.0);
     }
 
     prob.addBoxVars();
