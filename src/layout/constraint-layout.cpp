@@ -1,330 +1,14 @@
-#include <vector>
-#include <cstdio>
-#include <cstring>
-#include <cmath>
-#include <cassert>
-#include <cstdlib>
-#include <string>
+#include "constraint-layout.h"
 
-#define CONSTRAINT_EQ 0
-#define CONSTRAINT_LE 1
-#define CONSTRAINT_GE 2
+/******************************************************************
+ *                 Constraint                                     *
+ *****************************************************************/
 
-class Variable;
-class Constraint
-{
-    public:
-        Variable                *constrained;
-        std::vector<Variable *>  v;
-        std::vector<float>       scale;
-        int                      type;//0 equality, 1 upper bounded, 2 lower bounded
-        bool                     active;
-        bool                     satisfied;
-        int                      id;
-        unsigned size() const {return v.size();}
-        bool       canSimplify(Constraint &c);
-        Constraint simplify(Constraint &c);
-        bool isTrivialLowerBound();
-        bool isScalarEquality();
-        void dedup()
-        {
-            unsigned N=v.size();
-            //Eliminate Zeros
-            int current_id=N-1;
-            while(current_id >= 0) {
-                if(fabs(scale[current_id]) < 1e-6 && (current_id != 0 || v.size()>1)) {
-                    v.erase(v.begin()+current_id);
-                    scale.erase(scale.begin()+current_id);
-                }
-                current_id--;
-            }
-            //Eliminate Duplicate Entries
-            N=v.size();
-            current_id=N-1;
-            while(current_id > 0) {
-                int sub = current_id - 1;
-                while(sub >= 0)
-                {
-                    if(v[sub] == v[current_id]) {
-                        scale[sub] += scale[current_id];
-                        v.erase(v.begin()+current_id);
-                        scale.erase(scale.begin()+current_id);
-                    }
-                    sub--;
-                }
-                current_id--;
-            }
-        }
-
-        void dump(const char *prefix);
-
-        bool isConstOnly();
-};
-
-class Variable
-{
-    public:
-        Variable()
-            :solved(false), priority(1), is_fixed(false), id(10101) {}
-        Variable(const Variable&) = delete;
-        float fixed_value;
-        bool  is_fixed;
-
-        float solution;
-        bool  solved;
-
-        int priority; //0 low, 1 normal
-        int id;
-        std::string name;
-
-        Variable *alias;//Pointer to variable that actually solves problem
-
-        void solve(float s)
-        {
-            //assert(id != 41);
-            solution = s;
-            solved   = true;
-            for(int i=0; i<c.size(); ++i)
-                if(c[i]->isConstOnly())
-                    c[i]->active = false;
-        }
-
-        void addConstraint(int type, float scale, Variable *v)
-        {
-            c.push_back(new Constraint{this, {v}, {scale}, type, 1,0,(int)c.size()});
-        }
-        void addConstraint(int type, float scale, Variable *v, float scale2, Variable *v2)
-        {
-            c.push_back(new Constraint{this, {v,v2}, {scale,scale2}, type, 1,0,(int)c.size()});
-        }
-        void addConstraint(int type,
-                float s1, Variable *v1,
-                float s2, Variable *v2,
-                float s3, Variable *v3)
-        {
-            c.push_back(new Constraint{this, {v1,v2,v3}, {s1,s2,s3}, type, 1,0,(int)c.size()});
-        }
-
-        void solveReallyBasicAlgebra()
-        {
-            //If any constraint consists of the form
-            //%x OP %a + %b%x
-            //then reduce it to
-            //%x OP %a/(1-b)
-            for(int i=0; i<(int)c.size(); ++i)
-            {
-                auto &cc = *c[i];
-                int self = -1;
-                for(int j=0; j<(int)cc.v.size(); ++j)
-                    if(cc.v[j] == this)
-                        self = j;
-
-                if(self == -1)
-                    continue;
-                float rescale = 1/(1-cc.scale[self]);
-                cc.v.erase(cc.v.begin()+self);
-                cc.scale.erase(cc.scale.begin()+self);
-                for(int j=0; j<(int)cc.scale.size(); ++j)
-                    cc.scale[j] *= rescale;
-                cc.dedup();
-            }
-        }
-
-        //True if b is redundant if a exists
-        bool redundantBound(Constraint &a, Constraint &b)
-        {
-            if(a.size() != b.size() || a.type != b.type)
-                return false;
-            if(a.size() == 1 && a.v[0] == b.v[0] && a.scale[0] == b.scale[0])
-                return true;
-            if(a.type == CONSTRAINT_LE) {
-                bool all = true;
-                for(int i=0; i<a.size(); ++i)
-                    if(a.v[i] != b.v[i] || a.scale[i] > b.scale[i])
-                        all = false;
-                if(all)
-                    return true;
-            }
-            return false;
-        }
-
-        void removeRedundantBounds()
-        {
-            bool to_remove[c.size()];
-            memset(to_remove, 0, sizeof(to_remove));
-            for(int i=0; i<(int)c.size(); ++i) {
-                for(int j=0; j<(int)c.size(); ++j) {
-                    if((to_remove[i] || to_remove[j]) || i==j)
-                        continue;
-                    to_remove[j] = redundantBound(*c[i],*c[j]);
-                }
-            }
-
-            for(int i=c.size()-1; i>=0; --i)
-                if(to_remove[i])
-                    c.erase(c.begin()+i);
-        }
-
-        void trySolve()
-        {
-            if(solved)
-                return;
-            //printf("TRY TO SOLVE MEEEEEEEEEEEEEEEEEEEEEE<%d>\n", id);
-            for(int i=0; i<(int)c.size(); ++i) {
-                auto &cc = *c[i];
-                //printf("type = %d\n", cc.type);
-                //printf("size = %d\n", cc.v.size());
-                //printf("id   = %d\n", cc.v[0]->id);
-                if(cc.type == 0 && cc.v.size() == 1 && cc.v[0]->id == 0)
-                    solve(cc.scale[i]);
-                else if(cc.type == 0 && cc.v.size() == 1 && cc.v[0]->solved)
-                    solve(cc.scale[0]*cc.v[0]->solution);
-            }
-        }
-
-        void maximize()
-        {
-            //In case where there is only one usable max rule
-            //consisting of a constant and lower priority variables
-            Constraint *rule = NULL;
-            Constraint *unhandled_eq = NULL;
-            for(int i=0; i<(int)c.size(); ++i) {
-                if(c[i]->type == 1) {
-                    if(!rule)
-                        rule = c[i];
-                    else {
-                        printf("Weird maximization criteria\n");
-                        //rule->dump("OLD:");
-                        //c[i]->dump("NEW:");
-                        if(rule->scale[0] > c[i]->scale[0])
-                            rule = c[i];
-                    }
-                } else if(c[i]->type == CONSTRAINT_EQ) {
-                    unhandled_eq = c[i];
-                    unhandled_eq->dump("Possible issue:");
-                }
-            }
-
-            if(!rule || unhandled_eq)
-                return;
-            for(int i=0; i<rule->v.size(); ++i)
-                if(rule->v[i]->id == 0)
-                    solve(rule->scale[i]);
-        }
-
-        void reduceWithSolved(Variable *var);
-
-        bool hasScalarEquality()
-        {
-            Constraint *rule = NULL;
-            for(int i=0; i<(int)c.size(); ++i)
-                if(c[i]->type == 0 && c[i]->v.size() == 1)
-                    rule = c[i];
-            if(!rule)
-                return false;
-            return true;
-        }
-
-        void inverseRewrite(float scale, Variable *var)
-        {
-            //printf("inverse rewrite()\n");
-            for(int i=0; i<var->c.size(); ++i) {
-                auto &cc = *var->c[i];
-                if(cc.type != 0) {
-                    auto *ncon = new Constraint();
-                    ncon->type = cc.type;
-                    for(int j=0; j<cc.v.size(); ++j) {
-                        //printf("tick...\n");
-                        ncon->v.push_back(cc.v[j]);
-                        ncon->scale.push_back(scale*cc.scale[j]);
-                    }
-                    c.push_back(ncon);
-                    ncon->dedup();
-                }
-                cc.dedup();
-            }
-        }
-
-        void rewrite(Variable *var)
-        {
-            //printf("Rewrite(using %%%d on %%%d)...\n",id,var->id);
-            Constraint *rule = NULL;
-            for(int i=0; i<(int)c.size(); ++i)
-                if(c[i]->type == 0 && c[i]->v.size() == 1)
-                    rule = c[i];
-            if(!rule)
-                return;
-            //else
-            //    printf("Found Rule...\n");
-            Variable *rep    = rule->v[0];
-            float rep_scale =  rule->scale[0];
-            //printf("rewrier = %%%d %p %p\n", rep->id, var, rep);
-            if(rep == var)
-                var->inverseRewrite(1/rep_scale, this);
-            else {
-                for(int i=0; i<var->c.size(); ++i) {
-                    auto &cc = *var->c[i];
-                    for(int j=0; j<cc.v.size(); ++j) {
-                        if(cc.v[j] == this) {
-                            cc.v[j]      = rep;
-                            cc.scale[j] *= rep_scale;
-                        }
-                    }
-                    cc.dedup();
-                }
-            }
-        }
-
-        void printName(bool force)
-        {
-            assert(id >= 0);
-                
-            if(id==0 && force) {
-                printf("1");
-            } else if(id != 0) {
-                printf("%%%d", id);
-            }
-        }
-
-        int sign(float t) {
-            return t<0?-1:(t>0?+1:0);
-        }
-
-        void dump(const char *prefix)
-        {
-            return;
-            printf("%sVariable %d<%s>: [", prefix, id, name.c_str());
-            if(solved)
-                printf("solved<%f>,", solution);
-            if(is_fixed)
-                printf("fixed_value,");
-            printf("priority<%d>]\n", priority);
-
-            for(int i=0; i<(int)c.size(); ++i) {
-                c[i]->dump(prefix);
-            }
-        }
-
-        float hasNegCorr(Variable *var)
-        {
-            for(auto cc:c)
-                for(int i=0; i<cc->v.size(); ++i)
-                    if(var == cc->v[i] && sign(cc->scale[i]) == -1)
-                        return true;
-            return false;
-        }
-        float hasPosCorr(Variable *var)
-        {
-            for(auto cc:c)
-                for(int i=0; i<cc->v.size(); ++i)
-                    if(var == cc->v[i] && sign(cc->scale[i]) == +1)
-                        return true;
-            return false;
-        }
-
-        std::vector<Constraint *> c;
-};
-        
+void Constraint::addVar(float scale_, Variable &v_) {
+    assert(v_.id>=0);
+    scale.push_back(scale_);
+    v.push_back(&v_);
+}
 
 bool Constraint::isConstOnly()
 {
@@ -341,7 +25,7 @@ bool Constraint::isTrivialLowerBound()
         return false;
     return true;
 }
-                
+
 bool Constraint::isScalarEquality()
 {
     return type == 0 && v.size() == 1;
@@ -397,75 +81,10 @@ void Constraint::dump(const char *prefix)
     printf("\n");
 }
 
-class BBox
-{
-    public:
-        int id=0;
-        BBox *parent;
-        Variable x,y,w,h;
 
-        void dumpVar(Variable &var)
-        {
-            if(var.solved)
-                printf("%f",var.solution);
-            else
-                printf("?");
-        }
-        void dump(const char *prefix)
-        {
-            printf("%s%s%d - <", prefix,prefix,id);
-            dumpVar(x);printf(",");
-            dumpVar(y);printf(",");
-            dumpVar(w);printf(",");
-            dumpVar(h);printf(">\n");
-        }
-};
-
-class LayoutProblem
-{
-    public:
-        std::vector<BBox *>     box;
-        std::vector<Variable *> var;
-        void addVariable(Variable *var);
-        void addBoxVars();
-        void solve();
-        void depSolve();
-        void passSolveTrivial();
-        void passReduceWithSolved();
-        void passInvertTrivialBounds();
-        void passScalarVariableFixing();
-        void passDisableInactive();
-        void passRemoveRedundant();
-        void passTransferSolvedConstraints();
-        void passSolveBasicAlgebra();
-        void passDedup();
-        void passTighten();
-
-        void check_solution();
-        void dump();
-        void addBox(BBox &b)
-        {
-            b.id = box.size();
-            box.push_back(&b);
-        }
-};
-
-void LayoutProblem::addVariable(Variable *v)
-{
-    v->id = var.size()+1;
-    var.push_back(v);
-}
-
-class Constant: public Variable
-{
-    public:
-        Constant()
-        {
-            id = 0;
-        }
-};
-
-Constant *Const = new Constant();
+/******************************************************************
+ *                   Variable                                     *
+ *****************************************************************/
 
 void Variable::reduceWithSolved(Variable *var)
 {
@@ -480,6 +99,25 @@ void Variable::reduceWithSolved(Variable *var)
         }
         cc.dedup();
     }
+}
+
+class Constant: public Variable
+{
+    public:
+        Constant()
+        {
+            id = 0;
+        }
+};
+Variable *Const = new Constant();
+/******************************************************************
+ *                   Layout Problem                               *
+ *****************************************************************/
+
+void LayoutProblem::addVariable(Variable *v)
+{
+    v->id = var.size()+1;
+    var.push_back(v);
 }
 
 void LayoutProblem::addBoxVars()
@@ -645,7 +283,7 @@ void LayoutProblem::passInvertTrivialBounds()
                 break;
             auto &cc = *var[i]->c[j];
             if(cc.isTrivialLowerBound()) {
-                cc.v[0]->addConstraint(CONSTRAINT_LE, 
+                cc.v[0]->addConstraint(CONSTRAINT_LE,
                         1/cc.scale[0], var[i]);
                 var[i]->c.erase(var[i]->c.begin()+j);
             }
@@ -686,16 +324,16 @@ void LayoutProblem::passTransferSolvedConstraints()
             auto &cc = *var[i]->c[j];
             //printf("SOLVED THING<%d> [%d %d %d]\n", var[i]->id, cc.isScalarEquality(),  !cc.isConstOnly(), cc.type == CONSTRAINT_EQ);
             if(cc.isScalarEquality() && !cc.isConstOnly() && cc.type == CONSTRAINT_EQ) {
-                cc.v[0]->addConstraint(CONSTRAINT_EQ, 
+                cc.v[0]->addConstraint(CONSTRAINT_EQ,
                         1/cc.scale[0], var[i]);
                 var[i]->c.erase(var[i]->c.begin()+j);
             } else if(cc.v.size() == 2 && cc.v[0]->id == 0 && cc.v[1]->id != 0 &&
-                    cc.type == CONSTRAINT_LE && cc.scale[1] < 0) 
+                    cc.type == CONSTRAINT_LE && cc.scale[1] < 0)
             {
                 printf("Making a new Transfered Solution Constraint(%f)...\n",
                         var[i]->solution);
                 cc.dump("OLD: ");
-                cc.v[1]->addConstraint(CONSTRAINT_LE, 
+                cc.v[1]->addConstraint(CONSTRAINT_LE,
                         -(cc.scale[0]-var[i]->solution)/cc.scale[1], cc.v[0]);
                 cc.v[1]->c[cc.v[1]->c.size()-1]->dump("NEW: ");
                 var[i]->c.erase(var[i]->c.begin()+j);
@@ -751,6 +389,7 @@ void LayoutProblem::solve()
     //Propigate Solutions
     passReduceWithSolved();
     passInvertTrivialBounds();
+    passTransferSolvedConstraints();
 
 
     printf("-------------------------------------------------\n");
@@ -793,7 +432,7 @@ void LayoutProblem::solve()
 
     depSolve();
     passSolveTrivial();
-    
+
     //Propigate
     passTransferSolvedConstraints();
     passSolveBasicAlgebra();
@@ -806,12 +445,12 @@ void LayoutProblem::solve()
     passDedup();
     passTransferSolvedConstraints();
     passTighten();
-    
+
     printf("-------------------------------------------------\n");
     printf("---------Fifth Dep Solve Input-------------------\n");
     printf("-------------------------------------------------\n");
     dump();
-    
+
     depSolve();
     passReduceWithSolved();
     passTransferSolvedConstraints();
@@ -844,3 +483,136 @@ void LayoutProblem::dump()
         var[i]->dump("\t");
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#ifdef TESTING
+int main()
+{
+    BBox top;
+    top.parent = 0;
+    top.x.addConstraint(CONSTRAINT_EQ, 0, Const);
+    top.y.addConstraint(CONSTRAINT_EQ, 0, Const);
+    top.w.addConstraint(CONSTRAINT_EQ, 800, Const);
+    top.h.addConstraint(CONSTRAINT_EQ, 600, Const);
+
+    BBox children[9];
+    Variable colWidth[3];
+    Variable rowHeight[3];
+    Variable padw[9];
+    Variable padh[9];
+    //init column params
+    for(int i=0; i<3; ++i)
+    {
+        colWidth[i].priority = 900;
+        for(int j=0; j<3; ++j)
+            children[3*i+j].w.addConstraint(CONSTRAINT_LE, 1, colWidth+j, -1, &padw[3*i+j]);
+
+        rowHeight[i].priority = 900;
+        for(int j=0; j<3; ++j)
+            children[i+3*j].h.addConstraint(CONSTRAINT_LE, 1, rowHeight+j, -1, &padh[i+3*j]);
+    }
+    //init pad params
+    for(int i=0; i<9; ++i)
+    {
+        padw[i].priority = 100;
+        padh[i].priority = 100;
+    }
+
+    for(int i=0; i<9; ++i)
+    {
+        const int row = i/3;
+        const int col = i%3;
+        auto &child = children[i];
+        child.parent = &top;
+        if(row == 0) {
+            child.y.addConstraint(CONSTRAINT_EQ, 0, Const, 0.5, padh+i);
+        } else if(row == 1){
+            child.y.addConstraint(CONSTRAINT_EQ, 1, &colWidth[0], 0.5, padh+i);
+        } else if(row == 2){
+            child.y.addConstraint(CONSTRAINT_EQ, 1, &colWidth[0], 1, &colWidth[1], 0.5, padh+i);
+        }
+        //child.y.addConstraint(CONSTRAINT_GE, 1, &children[i-3].y, 1, &children[i-3].h);
+        if(col == 0) {
+            child.x.addConstraint(CONSTRAINT_EQ, 0, Const, 0.5, padw+i);
+        } else if(col == 1){
+            child.x.addConstraint(CONSTRAINT_EQ, 1, &rowHeight[0], 0.5, padw+i);
+        } else if(col == 2){
+            child.x.addConstraint(CONSTRAINT_EQ, 1, &rowHeight[0], 1, &rowHeight[1], 0.5, padw+i);
+        } else {
+        }
+        //child.x.addConstraint(CONSTRAINT_GE, 1, &children[i-1].x, 1, &children[i-1].w);
+    }
+
+
+    children[4].w.addConstraint(CONSTRAINT_EQ, 1, &children[4].h);
+
+    colWidth[0].addConstraint(CONSTRAINT_EQ, 1, &colWidth[1]);
+    colWidth[1].addConstraint(CONSTRAINT_EQ, 1, &colWidth[2]);
+    rowHeight[0].addConstraint(CONSTRAINT_EQ, 1, &rowHeight[1]);
+    rowHeight[1].addConstraint(CONSTRAINT_EQ, 1, &rowHeight[2]);
+    top.w.addConstraint(CONSTRAINT_EQ, 1, &colWidth[0], 1, &colWidth[1], 1, &colWidth[2]);
+    top.h.addConstraint(CONSTRAINT_EQ, 1, &rowHeight[0], 1, &rowHeight[1], 1, &rowHeight[2]);
+
+    LayoutProblem prob;
+
+    // BBox A;
+    // BBox B;
+    // A.parent = &top;
+    // B.parent = &top;
+    // A.x.addConstraint(CONSTRAINT_EQ, 0,   Const);
+    // B.x.addConstraint(CONSTRAINT_EQ, 1,   &subproblem1.x, 1, &subproblem1.w);
+    // //subproblem2.w.addConstraint(CONSTRAINT_EQ, 0.3333, &subproblem1.w);
+
+    //Variable tmp;
+    //tmp.priority = 500;
+    for(int i=0; i<9; ++i)
+        prob.addBox(children[i]);
+    prob.addBox(top);
+    for(int i=0; i<3; ++i) {
+        colWidth[i].name = "colwidth";
+        prob.addVariable(&colWidth[i]);
+    }
+    for(int i=0; i<3; ++i) {
+        rowHeight[i].name = "rowheight";
+        prob.addVariable(&rowHeight[i]);
+    }
+    for(int i=0; i<9; ++i) {
+        padh[i].name = "padh";
+        prob.addVariable(&padh[i]);
+        //padh[i].solve(0.0);
+    }
+    for(int i=0; i<9; ++i) {
+        padw[i].name = "padw";
+        prob.addVariable(&padw[i]);
+        //padw[i].solve(0.0);
+    }
+
+    prob.addBoxVars();
+    prob.dump();
+    //prob.addVariable(&tmp);
+    //A.w.addConstraint(CONSTRAINT_EQ, 2, &tmp);
+    //B.w.addConstraint(CONSTRAINT_EQ, 6, &tmp);
+    //prob.addBox(top);
+    //prob.addBox(subproblem1);
+    //prob.addBox(subproblem2);
+
+    prob.solve();
+    prob.dump();
+
+
+    //Verify That no widgets with the same parent overlap
+    prob.check_solution();
+}
+#endif//TESTING

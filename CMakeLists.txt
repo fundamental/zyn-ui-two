@@ -18,6 +18,7 @@ add_definitions(${QT_DEFINITIONS})
 
 add_executable(helloqml ${helloqml_SRC} 
                         draw.c layout.cpp grid.c nanovg/nanovg.c
+                        src/layout/constraint-layout.cpp
                         ${helloqml_HEADERS_MOC}
                         ${helloqml_RESOURCES_RCC})
 

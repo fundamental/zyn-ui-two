@@ -1,6 +1,7 @@
 #pragma once
 #include <QtQuick/QQuickItem>
 #include "../draw.h"
+#include "layout/constraint-layout.h"
 
 struct NVGcontext;
 
@@ -21,8 +22,12 @@ public slots:
     virtual void paint(NVGcontext *vg)=0;
     void handleWindowChanged(QQuickWindow *win);
     void handleSync();
+    virtual void abstractDamageLayout(){damageLayout();};
+    virtual void damageLayout(){};
 protected:
     qreal m_zscale, m_zaspect;
     QString m_label;
     bool m_zexpandable;
 };
+void setBounds(QQuickItem &o, const BBox &box);
+void setBounds(QQuickItem &o, float x, float y, float w, float h);

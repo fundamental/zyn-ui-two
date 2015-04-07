@@ -1,0 +1,188 @@
+When a layout node is damaged, at the next draw the layout of all associated
+nodes needs to be re-evaluated.
+This is done by maintaining a list of layout problems which solve for a series
+of xywh rectangles given a series of constraints.
+
+Supported Constraints:
+- Aspect Ratio
+- Relative Width  Compared To Parent
+- Relative Height Compared To Parent
+- Identical Height (assumes it's safe to pick the maximum hight that solves
+                    subproblems)
+
+
+Important Layout Organizing Types:
+
+- Widget Grids
+- Widget Packs
+- Identical Subwidget height/width across widgets
+- Widget Scrolls
+
+
+Explicit Rules
+~~~~~~~~~~~~~~
+
+For A.parent = B.parent
+For root node D
+
+A.height    = s*A.width
+A.width    <= s*C.width
+A.height   <= s*C.height
+A.width     = s*C.width
+A.height    = s*C.height
+D.width     = w
+D.height    = h
+A.x         = B.x + g*A.parent.width  + delta
+A.y         = B.y + g*A.parent.height + delta
+A.x         = B.x + B.width  + p
+A.y         = B.y + B.height + p
+A.parent    = C
+A.children  = centered.x
+A.children  = centered.y
+
+Implicit
+~~~~~~~~
+
+A.parent.width  > A.width  + A.x
+A.parent.height > A.height + A.y
+A.x             > 0
+A.y             > 0
+A.width         > 0
+A.height        > 0
+delta           > 0
+p               > 0
+
+elements on the same z level do not overlap
+
+Ordered Maximization
+~~~~~~~~~~~~~~~~~~~~
+
+- Width
+- Height
+- Padding
+
+
+Algorithm
+~~~~~~~~~
+
+0. Verify Sufficient Constraints Exist
+1. Extract out parameters to be solved for
+   Dependency graph should form a directed acyclic graph
+2. Optimize Parameters in order
+
+
+
+Example
+~~~~~~~
+
+3x3 grid
+
+             X
+     AA       BB     CC
+------------+----+--------
+|           |    |       |
+|    A      | B  |   C   | CC
+|           |    |       |
++-----------+----+-------+
+|           |    |       |
+|    D      | E  |   F   | FF
+|           |    |       |
+|           |    |       |
++-----------+----+-------+
+|           |    |       |
+|    G      | H  |   I   | II
+------------+----+--------
+
+#Declare Top Level Positions
+X.x       = 0
+X.y       = 0
+X.width   = 100
+X.height  = 100
+X.parent  = null
+\forall [A..i] do gamma
+     gamma.parent  = X
+
+#Declare X pos
+declare Pw*, Ph* padding paremter
+declare Pw* do gamma
+    gamma >= 5px
+    gamma >= 0.01X.width
+A.x = 0.5 PwA
+D.x = 0.5 PwD
+G.x = 0.5 PwG
+
+declare CAA, CBB, CCC as intermediate
+CAA <= A.width + PwA
+CAA <= D.width + PwD
+CAA <= G.width + PwG
+
+B.x = A.x + CAA + PwB
+E.x = D.x + CAA + PwE
+H.x = H.x + CAA + PwH
+
+CBB <= B.width + PwB
+CBB <= E.width + PwE
+CBB <= H.width + PwH
+
+C.x = B.x + CBB  + PwC
+F.x = E.x + CBB  + PwF
+I.x = H.x + CBB  + PwI
+
+CCC <= C.width + PwC
+CCC <= F.width + PwF
+CCC <= I.width + PwI
+
+#Repeat above for rows
+
+
+#Define Constraints to make this sovable
+H.width  = 0.3 H.height
+C.width  = 1*C.height
+F.height = 2*C.height
+CAA = 0.5 CBB
+CAA = 0.2 CCC
+
+X.width  = CAA+CBB+CCC
+X.height = RCC+RFF+RII
+
+#Solver
+
+known x.height, x.width, X.x, X.y
+constrained by known, CAA, CBB, CCC
+(01) CAA <= X.width
+(02) CBB <= X.width
+(03) CCC <= X.width
+
+(04) RCC <= X.height
+(05) RFF <= X.height
+(06) RII <= X.height
+
+refine (1) and eliminate (1)
+(07) 1.5 CAA <= X.width
+refine (7) and eliminate (7)
+(08) 1.7 CAA <= X.width
+
+Assuming Padding is minimum
+(09) A.width <= (1/1.7) X.width - 5px
+(10) D.width <= (1/1.7) X.width - 5px
+(11) E.width <= (1/1.7) X.width - 5px
+
+(12) A.width <= (1/1.7-0.01) X.width
+(13) D.width <= (1/1.7-0.01) X.width
+(14) E.width <= (1/1.7-0.01) X.width
+
+eliminate dominated (9), (10), (11)
+as no further constraints can be put on (12..14)
+
+(15) A.width = (1/1.7-0.01) X.width [solved]
+(16) D.width = (1/1.7-0.01) X.width [solved]
+(17) E.width = (1/1.7-0.01) X.width [solved]
+
+as no further constrains can be put on CAA
+(18) CAA = (1/1.7-0.01) X.width       [solved]
+as no further constrains can be put on CBB/CCC
+(19) CBB = 2(1/1.7-0.01) X.width      [solved]
+(20) CCC = (10/3)(1/1.7-0.01) X.width [solved]
+
+Etc until completion
+

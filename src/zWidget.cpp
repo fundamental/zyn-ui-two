@@ -12,7 +12,19 @@ zWidget::zWidget(QQuickItem *parent)
     :QQuickItem(parent), m_zscale(1.0), m_zaspect(1.0),
      m_label(""), m_zexpandable(false)
 {
-    connect(this, SIGNAL(windowChanged(QQuickWindow*)), this, SLOT(handleWindowChanged(QQuickWindow*)));
+    connect(this, SIGNAL(windowChanged(QQuickWindow*)),
+            this, SLOT(handleWindowChanged(QQuickWindow*)));
+
+    connect(this, SIGNAL(xChanged()),
+            this, SLOT(abstractDamageLayout()));
+    connect(this, SIGNAL(yChanged()),
+            this, SLOT(abstractDamageLayout()));
+    connect(this, SIGNAL(heightChanged()),
+            this, SLOT(abstractDamageLayout()));
+    connect(this, SIGNAL(widthChanged()),
+            this, SLOT(abstractDamageLayout()));
+    connect(this, SIGNAL(childrenChanged()),
+            this, SLOT(abstractDamageLayout()));
 }
 
 void zWidget::handleWindowChanged(QQuickWindow *win)
@@ -100,4 +112,15 @@ std::string zWidget::getLabel() const
         label++;
     }
     return result;
+}
+void setBounds(QQuickItem &o, const BBox &box)
+{
+    setBounds(o, box.x.solution, box.y.solution, box.w.solution, box.h.solution);
+}
+void setBounds(QQuickItem &o, float x, float y, float w, float h)
+{
+    o.setX(x);
+    o.setY(y);
+    o.setWidth(w);
+    o.setHeight(h);
 }
