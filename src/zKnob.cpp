@@ -11,11 +11,14 @@ void zKnob::setT(qreal t)
         return;
     m_t = t;
     emit xChanged();
-    if (window())
+    auto *root = dynamic_cast<zWidget*>(window()->contentItem()->childItems()[0]);
+    if(root)
+        root->tryDamage(this);
+    if(window())
         window()->update();
 }
 
 void zKnob::paint(NVGcontext *vg)
 {
-    drawAltDial(vg, m_t, 0, 0, width(),height());//400, 0, 100, 100);
+    drawAltDial(vg, m_t, 0, 0, width(),height());
 }

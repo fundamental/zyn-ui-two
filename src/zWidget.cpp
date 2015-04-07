@@ -10,7 +10,7 @@ NVGcontext *initVG();
 
 zWidget::zWidget(QQuickItem *parent)
     :QQuickItem(parent), m_zscale(1.0), m_zaspect(1.0),
-     m_label(""), m_zexpandable(false)
+     m_label(""), m_zexpandable(false), m_damage(0,0,0,0)
 {
     connect(this, SIGNAL(windowChanged(QQuickWindow*)),
             this, SLOT(handleWindowChanged(QQuickWindow*)));
@@ -46,39 +46,45 @@ void zWidget::handleSync()
     //printf("%p %p %p %d\n", this, parentItem(), window()->contentItem(),
     //        parentItem()-window()->contentItem());
     if(parentItem() == window()->contentItem())  {
-        abstractPaint();
+        //only redraw damaged area when possible
+        if(m_damage.isValid() && !m_damage.isEmpty()) {
+            abstractPaint(m_damage);
+        } else
+            abstractPaint(QRectF(0,0,-1,-1));
+        m_damage = QRectF(0,0,0,0);
     }
 }
 
-static void draw(QObject *item)
+static void draw(QObject *item, QRectF damage=QRectF(0,0,-1,-1))
 {
     QQuickItem *quick = dynamic_cast<QQuickItem*>(item);
     if(!quick && !item->children().isEmpty())
         ;
     zWidget *X = dynamic_cast<zWidget*>(item);
     if(X)
-        X->abstractPaint();
+        X->abstractPaint(damage);
     if(quick) {
         const QList<QQuickItem*> children = quick->childItems();
         size_t N = children.size();
         for(unsigned i=0; i<N; ++i)
-            draw(children[i]);
+            draw(children[i],damage);
     }
 }
 
-void zWidget::abstractPaint()
+void zWidget::abstractPaint(QRectF damage)
 {
     static long drawCount = 0;
-    drawCount++;
 
     auto pos = mapToItem(window()->contentItem(), QPointF(0,0));
     float yy = (window()->contentItem()->height()-height())-pos.y();
-    glViewport(pos.x(), yy, width(), height());
-    if(parentItem() == window()->contentItem()) {
-        glClearColor(0x06/255.0, 0x27/255.0, 0x37/255.0, 1.0f);
-        glClearColor(0, 0, 0, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
+    auto bb = QRectF(pos.x(), pos.y(), width(), height());
+    if(damage.isValid() && !damage.intersects(bb)) {
+        return;
     }
+
+    drawCount++;
+
+    glViewport(pos.x(), yy, width(), height());
 
     printf("draw %ld: '%s'{%s}(%f,%f,%f,%f)\n", drawCount,
             metaObject()->className(), m_label.toLatin1().data(),
@@ -86,13 +92,20 @@ void zWidget::abstractPaint()
     NVGcontext *vg = (NVGcontext*)initVG();
     glViewport(pos.x(), yy, width(), height());
     nvgBeginFrame(vg, width(), height(), 1.0);
+    if(damage.isValid()) {
+        auto dmg = mapRectFromItem(window()->contentItem(), damage);
+
+        float sx = dmg.x();
+        float sy = dmg.y();
+        nvgScissor(vg, sx, sy, dmg.width(), dmg.height());
+    }
     paint(vg);
     nvgEndFrame(vg);
 
     if(parentItem() == window()->contentItem()) {
         size_t N = childItems().size();
         for(unsigned i=0; i<N; ++i)
-            draw(childItems()[i]);
+            draw(childItems()[i], damage);
     }
 }
 
@@ -112,6 +125,12 @@ std::string zWidget::getLabel() const
         label++;
     }
     return result;
+}
+void zWidget::tryDamage(QQuickItem *w)
+{
+    auto pos = w->mapToItem(window()->contentItem(), QPointF(0,0));
+    float yy = pos.y();//(window()->contentItem()->height()-height())-pos.y();
+    m_damage = QRectF(pos.x(), yy, w->width(), w->height());
 }
 void setBounds(QQuickItem &o, const BBox &box)
 {

@@ -21,6 +21,7 @@
         <file>qml/Mixer.qml</file>
         <file>qml/MixerElement.qml</file>
         <file>qml/Module.qml</file>
+        <file>qml/OptionList.qml</file>
         <file>qml/SubVoice.qml</file>
         <file>qml/VLayout.qml</file>
         <file>qml/VSlider.qml</file>

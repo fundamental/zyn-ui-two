@@ -8,5 +8,5 @@ HLayout {
         HSlider {text: "key shift"}
     }
     DbMeter {}
-    PanicButton {}
+    Button {renderer: "icon-panic"}
 }

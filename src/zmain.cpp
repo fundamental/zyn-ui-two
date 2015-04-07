@@ -89,6 +89,11 @@ int main(int argc, char *argv[])
 
     //Unimplemented
     qmlRegisterType<zDummy>("ZynAddSubFX", 1, 0, "Div");
+    //qmlRegisterType<zDummy>("ZynAddSubFX",  1, 0, "OptionList");
+    qmlRegisterType<zButton>("ZynAddSubFX",  1, 0, "TextLine");
+    qmlRegisterType<zButton>("ZynAddSubFX",  1, 0, "Radio");
+    qmlRegisterType<zDummy>("ZynAddSubFX",  1, 0, "MenuBar");
+    qmlRegisterType<zDummy>("ZynAddSubFX",  1, 0, "TextBox");
 
     const char *element = "qrc:/qml/test.qml";
     if(argc == 2)

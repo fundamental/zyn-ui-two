@@ -1,9 +1,13 @@
+import ZynAddSubFX 1.0
+import "qrc:/qml/"
+
+Blank {
 HLayout {
     VLayout {
         TextLine {label: "search..."}
         HLayout {
             OptionList {
-                resetable: true
+                //resetable: true
                 label: "bank"
             }
             OptionList {
@@ -17,7 +21,7 @@ HLayout {
     VLayout {
         MenuBar {
             Radio {
-                options: ["read", "write"]
+                //options: ["read", "write"]
             }
         }
         HLayout {
@@ -38,4 +42,5 @@ HLayout {
             }
         }
     }
+}
 }

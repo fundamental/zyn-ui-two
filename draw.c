@@ -719,11 +719,83 @@ void drawPowLabel(NVGcontext *vg, int x, int y, int w, int h)
     nvgStroke(vg);
 }
 //------------------------------------------------------------------------------
-void drawPowButton(NVGcontext *vg, int x, int y, int w, int h)
+void drawPowerButton(NVGcontext *vg, int x, int y, int w, int h)
 {
     drawBox(vg, x, y, w, h);
     nvgStrokeColor(vg, nvgRGBA(0x00,0xcf,0xf7,255));
     drawPowLabel(vg, x, y, w, h);
+}
+//------------------------------------------------------------------------------
+void nvgTextHere(NVGcontext *vg, const char *str, float x,
+        float y, float w, float h)
+{
+    nvgFontSize(vg, h);
+    nvgFontFace(vg, "sans");
+
+    nvgTextAlign(vg,NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);
+
+    float bounds[4];
+    nvgTextBounds(vg, x,y, str, NULL, bounds);
+    if((bounds[2]-bounds[0]) > w) //horizontally constrained case
+        nvgFontSize(vg, h*w*1.0/(bounds[2]-bounds[0]));
+
+    nvgText(vg, x+w/2,y+h*0.5f,str, NULL);
+}
+void drawPanicButton(NVGcontext *vg, int x, int y, int w, int h)
+{
+    //orig - 32px wide vs 25px tall
+    drawBox(vg, x, y, w, h);
+    nvgBeginPath(vg);
+    nvgMoveTo(vg, x+w*0.5, y+h*0.47);
+    nvgLineTo(vg, x+w*0.7, y+h*0.47);
+    nvgLineTo(vg, x+w*0.5, y+h*0.17);
+    nvgLineTo(vg, x+w*0.3, y+h*0.47);
+    nvgClosePath(vg);
+    nvgFillColor(vg, nvgRGBA(0x00,0xcf,0xf7,255));
+    nvgFill(vg);
+
+    //nvgFillColor(vg, nvgRGBA(0x04, 0x37, 0x5e, 255));
+    nvgFillColor(vg, nvgRGBA(0x0c, 0x0c, 0x0c, 255));
+    nvgTextHere(vg, "!", x, y+0.25*h, w, 0.2*h);
+    nvgFillColor(vg, nvgRGBA(0x00,0xcf,0xf7,255));
+    nvgTextHere(vg, "PANIC", x+0.1*w, y+0.45*h, w*0.8, 0.5*h);
+}
+//------------------------------------------------------------------------------
+void drawStopButton(NVGcontext *vg, int x, int y, int w, int h)
+{
+    drawBox(vg, x, y, w, h);
+    float bb[4] = {(float)x, (float)y, (float)w, (float)h};
+    square(pad(0.5, bb));
+    nvgBeginPath(vg);
+    nvgRect(vg, SPLAT(bb));
+    nvgFillColor(vg, nvgRGBA(0x00,0xcf,0xf7,255));
+    nvgFill(vg);
+    //nvgStrokeColor(vg, nvgRGBA(0x00,0xcf,0xf7,255));
+    //drawPowLabel(vg, x, y, w, h);
+}
+//------------------------------------------------------------------------------
+void drawPauseButton(NVGcontext *vg, int x, int y, int w, int h)
+{
+    drawBox(vg, x, y, w, h);
+    float bb[4] = {(float)x, (float)y, (float)w, (float)h};
+    square(pad(0.5, bb));
+    nvgFillColor(vg, nvgRGBA(0x00,0xcf,0xf7,255));
+    nvgBeginPath(vg);
+    nvgRect(vg, bb[0],        bb[1],bb[2]/4,bb[3]);
+    nvgFill(vg);
+    nvgBeginPath(vg);
+    nvgRect(vg, bb[0]+bb[2]/2,bb[1],bb[2]/4,bb[3]);
+    nvgFill(vg);
+}
+void drawRecButton(NVGcontext *vg, int x, int y, int w, int h)
+{
+    drawBox(vg, x, y, w, h);
+    float bb[4] = {(float)x, (float)y, (float)w, (float)h};
+    square(pad(0.5, bb));
+    nvgFillColor(vg, nvgRGBA(0x00,0xcf,0xf7,255));
+    nvgBeginPath(vg);
+    nvgCircle(vg, bb[0]+bb[2]/2, bb[1]+bb[3]/2,bb[2]/2);
+    nvgFill(vg);
 }
 //------------------------------------------------------------------------------
 void drawToggleBox(NVGcontext *vg, const char *str, int x, int y, int w, int h)
@@ -854,6 +926,18 @@ float *boarder(float scale, float *bb)
     bb[1] += scale;
     bb[2] -= 2*scale;
     bb[3] -= 2*scale;
+    return bb;
+}
+
+float *square(float *bb)
+{
+    float cx = bb[0]+bb[2]/2;
+    float cy = bb[1]+bb[3]/2;
+    float d  = (bb[2]<bb[3]?bb[2]:bb[3])/2;
+    bb[0] = cx-d;
+    bb[1] = cy-d;
+    bb[2] = 2*d;
+    bb[3] = 2*d;
     return bb;
 }
 

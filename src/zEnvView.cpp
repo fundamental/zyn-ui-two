@@ -43,6 +43,9 @@ QPointF zEnvView::objMove(int x, QPointF delta)
     m_data[2*x+1] = dest.x();
     m_data[2*x+0] = dest.y();
 
+    auto *root = dynamic_cast<zWidget*>(window()->contentItem()->childItems()[0]);
+    if(root)
+        root->tryDamage(this);
     if(window())
         window()->update();
 

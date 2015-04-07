@@ -5,12 +5,12 @@ ZGrid {
     rows: 2
     cols: 3
     DropDown { text: "file" }
-    HLayout {
-        Button {}
-        Button {}
-    }
-    Button {}
     Button {}
     Button {label: "midi learn"}
+    HLayout {
+        Button {renderer: "icon-record"}
+        Button {renderer: "icon-pause"}
+    }
+    Button {renderer: "icon-stop"}
     Button {label: "aquire"}
 }
