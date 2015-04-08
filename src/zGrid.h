@@ -24,52 +24,96 @@ public slots:
 
         LayoutProblem prob;
         BBox self;
-        self.x.addConstraint(CONSTRAINT_EQ, 0, Const);
-        self.y.addConstraint(CONSTRAINT_EQ, 0, Const);
-        self.w.addConstraint(CONSTRAINT_EQ, width(), Const);
-        self.h.addConstraint(CONSTRAINT_EQ, height(), Const);
+        self.x = 0;
+        self.y = 0;
+        self.w = width();
+        self.h = height();
+        Variable textHeight;
         Variable *padh = new Variable[m_rows*m_cols];
         Variable *padw = new Variable[m_rows*m_cols];
         Variable *rh   = new Variable[m_rows];
         Variable *cw   = new Variable[m_cols];
-        BBox     *ch   = new BBox[m_rows*m_cols];
+        BBox    **ch   = new BBox*[m_rows*m_cols];
 
         prob.addBox(self);
+        prob.addVariable(&textHeight);
+        textHeight.name = "textHeight";
+        textHeight.priority = 200;
+        memset(ch, 0, sizeof(void*)*m_rows*m_cols);
+        for(int i=0; i<childItems().size(); ++i)
+        {
+            QQuickItem *obj = dynamic_cast<QQuickItem*>(childItems()[i]);
+            if(QString("QQuickRepeater") == obj->metaObject()->className())
+                continue;
+            zWidget *obj_ = dynamic_cast<zWidget*>(obj);
+            if(obj_)
+                ch[i] = &obj_->layoutSubProblems(prob, self);
+            else
+                ch[i] = new BBox;
+        }
+
+
         for(int i=0; i<m_rows; ++i) {
             rh[i].name = "row-height";
             rh[i].priority = 900;
-            rh[i].addConstraint(CONSTRAINT_EQ, height()/m_rows, Const);
+            rh[i] = height()/m_rows;
             prob.addVariable(rh+i);
         }
         for(int i=0; i<m_cols; ++i) {
             cw[i].name = "column-width";
-            cw[i].priority = 900;
-            cw[i].addConstraint(CONSTRAINT_EQ, width()/m_rows, Const);
+            cw[i].priority = 50;
+            cw[i] = width()/m_cols;
             prob.addVariable(cw+i);
+            auto &cc = cw[i].addConstraint(CONSTRAINT_LE, 1, &self.w);
+            //for(int j=0; j<m_cols; ++j)
+            //    if(i!=j)
+            //        cc.addVar(-1.0, cw[j]);
         }
     
         for(int i=0; i<m_rows*m_cols; ++i)
         {
-            const int row = i/3;
-            const int col = i%3;
-            auto &child = ch[i];
+            const int row = i/m_cols;
+            const int col = i%m_cols;
+            if(!ch[i])
+                ch[i] = new BBox;
+            auto &child = *ch[i];
             child.parent = &self;
-            auto &cy = child.y.addConstraint(CONSTRAINT_EQ, 0.5, padh+i);
-            auto &cx = child.x.addConstraint(CONSTRAINT_EQ, 0.5, padw+i);
+            printf("row=%d,col=%d\n", row, col);
+
+            cw[col] >= child.w;
+            auto *cy = &child.y.addConstraint(CONSTRAINT_EQ, 0.5, padh+i);
+            auto *cx = &child.x.addConstraint(CONSTRAINT_EQ, 0.5, padw+i);
             for(int i=0; i<row; ++i)
-                cy.addVar(1.0, cw[i]);
+                cy->addVar(1.0, rh[i]);
             for(int i=0; i<col; ++i)
-                cx.addVar(1.0, rh[i]);
-            child.w.addConstraint(CONSTRAINT_LE, 1, &cw[col]);
-            child.h.addConstraint(CONSTRAINT_LE, 1, &rh[row]);
+                cx->addVar(1.0, cw[i]);
+
+            cy = &child.y.addConstraint(CONSTRAINT_LE, -0.5, padh+i, -1, &child.h);
+            cx = &child.x.addConstraint(CONSTRAINT_LE, -0.5, padw+i, -1, &child.w);
+            for(int i=0; i<row+1; ++i)
+                cy->addVar(1.0, rh[i]);
+            for(int i=0; i<col+1; ++i)
+                cx->addVar(1.0, cw[i]);
+            //auto &ch_ = child.h.addConstraint(CONSTRAINT_LE, -1, &child.y, -1, padh+i);
+            //for(int i=0; i<row+1; ++i)
+            //    ch_.addVar(1.0, rh[i]);
+            //for(int i=0; i<col; ++i)
+            //    cw_.addVar(1.0, cw[i]);
+            child.w <= cw[col]-padw[i];
+            child.h <= rh[row]-padh[i];
             padh[i].name = "padh";
             padw[i].name = "padw";
-            padh[i].priority = 100;
-            padw[i].priority = 100;
+            padh[i].priority = 120;
+            padw[i].priority = 120;
             prob.addVariable(padh+i);
             prob.addVariable(padw+i);
             prob.addBox(child);
         }
+        
+
+        ch[1]->h = textHeight;
+        ch[2]->h = textHeight;
+        ch[5]->h = textHeight;
         prob.addBoxVars();
         prob.dump();
 
@@ -81,7 +125,12 @@ public slots:
             QQuickItem *obj = dynamic_cast<QQuickItem*>(childItems()[i]);
             if(QString("QQuickRepeater") == obj->metaObject()->className())
                 continue;
-            setBounds(*obj, ch[j]);
+            printf("set bounds <%f, %f, %f, %f>\n",
+                    ch[i]->x.solution,
+                    ch[i]->y.solution,
+                    ch[i]->w.solution,
+                    ch[i]->h.solution);
+            setBounds(*obj, *ch[i]);
         }
     }
     virtual void paint(NVGcontext *vg){};

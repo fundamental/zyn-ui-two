@@ -24,6 +24,7 @@ public slots:
     virtual void paint(NVGcontext *vg)=0;
     void handleWindowChanged(QQuickWindow *win);
     void handleSync();
+    virtual BBox &layoutSubProblems(LayoutProblem &prob, BBox &parent);
     virtual void abstractDamageLayout(){damageLayout();};
     virtual void damageLayout(){};
 protected:
@@ -31,6 +32,7 @@ protected:
     QString m_label;
     bool m_zexpandable;
     QRectF m_damage;
+    BBox   bbox;
 };
 void setBounds(QQuickItem &o, const BBox &box);
 void setBounds(QQuickItem &o, float x, float y, float w, float h);

@@ -132,6 +132,14 @@ void zWidget::tryDamage(QQuickItem *w)
     float yy = pos.y();//(window()->contentItem()->height()-height())-pos.y();
     m_damage = QRectF(pos.x(), yy, w->width(), w->height());
 }
+    
+BBox &zWidget::layoutSubProblems(LayoutProblem &prob, BBox &parent)
+{
+    bbox.parent = &parent;
+    bbox.clear();
+    return bbox;
+}
+
 void setBounds(QQuickItem &o, const BBox &box)
 {
     setBounds(o, box.x.solution, box.y.solution, box.w.solution, box.h.solution);

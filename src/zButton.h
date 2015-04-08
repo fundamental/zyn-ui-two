@@ -13,6 +13,7 @@ public:
     void paint(NVGcontext *vg);
     void setAutoAspect(bool);
     bool dummy() { return false;}
+    BBox &layoutSubProblems(LayoutProblem &prob, BBox &parent);
 private:
     bool m_t;
     QString m_renderer;

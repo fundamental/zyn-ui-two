@@ -26,3 +26,15 @@ void zButton::paint(NVGcontext *vg)
 void zButton::setAutoAspect(bool)
 {
 }
+
+BBox &zButton::layoutSubProblems(LayoutProblem &prob, BBox &parent)
+{
+    bbox.parent = &parent;
+    bbox.clear();
+    if(m_renderer == "default") {
+        printf("Setting height/width stuff\n");
+        bbox.h = m_zaspect*bbox.w;
+    } else
+        bbox.h = bbox.w;
+    return bbox;
+}

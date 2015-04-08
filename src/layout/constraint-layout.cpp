@@ -1,5 +1,10 @@
 #include "constraint-layout.h"
 
+#define QUIET_DOWN
+#ifdef  QUIET_DOWN
+#define printf(...)
+#endif
+
 /******************************************************************
  *                 Constraint                                     *
  *****************************************************************/
@@ -29,6 +34,47 @@ bool Constraint::isTrivialLowerBound()
 bool Constraint::isScalarEquality()
 {
     return type == 0 && v.size() == 1;
+}
+        
+void Constraint::dedup()
+{
+    unsigned N=v.size();
+    //Eliminate Zeros
+    int current_id=N-1;
+    while(current_id >= 0) {
+        if(fabs(scale[current_id]) < 1e-6 && (current_id != 0 || v.size()>1)) {
+            v.erase(v.begin()+current_id);
+            scale.erase(scale.begin()+current_id);
+        }
+        current_id--;
+    }
+    //Eliminate Duplicate Entries
+    N=v.size();
+    current_id=N-1;
+    while(current_id > 0) {
+        int sub = current_id - 1;
+        while(sub >= 0)
+        {
+            if(v[sub] == v[current_id]) {
+                scale[sub] += scale[current_id];
+                v.erase(v.begin()+current_id);
+                scale.erase(scale.begin()+current_id);
+            }
+            sub--;
+        }
+        current_id--;
+    }
+    //Put constant term in front
+    N=v.size();
+    if(v.size() != 0 && v[0]->id != 0) {
+        for(int i=0; i<N; ++i) {
+            if(v[i]->id == 0) {
+                std::swap(v[i], v[0]);
+                std::swap(scale[i], scale[0]);
+                break;
+            }
+        }
+    }
 }
 
 
@@ -80,11 +126,341 @@ void Constraint::dump(const char *prefix)
         printf(" [a]");
     printf("\n");
 }
+/******************************************************************
+ *                   Linear Constraint                            *
+ *****************************************************************/
+LinearConstraint::LinearConstraint(Variable&v_)
+{
+    v.push_back(&v_);
+}
+LinearConstraint::LinearConstraint(float s_)
+{
+    s.push_back(s_);
+}
+
+void LinearConstraint::finalize()
+{
+    if(s.size() == v.size() + 1)
+        v.push_back(Const);
+    if(s.size() == v.size() - 1)
+        s.push_back(1.0);
+    assert(s.size() == v.size());
+}
+
+LinearConstraint operator-(LinearConstraint self, LinearConstraint l)
+{
+    self.finalize();
+    l.finalize();
+    assert(self.s.size() == self.v.size());
+    assert(l.s.size() == l.v.size());
+    for(int i=0; i<l.s.size(); ++i) {
+        self.s.push_back(-l.s[i]);
+        self.v.push_back(l.v[i]);
+    }
+    return self;
+}
+
+LinearConstraint operator+(LinearConstraint self, LinearConstraint l)
+{
+    self.finalize();
+    l.finalize();
+    assert(self.s.size() == self.v.size());
+    assert(l.s.size() == l.v.size());
+    for(int i=0; i<l.s.size(); ++i) {
+        self.s.push_back(l.s[i]);
+        self.v.push_back(l.v[i]);
+    }
+    return self;
+}
+
+LinearConstraint operator*(LinearConstraint self, LinearConstraint l)
+{
+    assert(self.s.size() == 1);
+    assert(self.v.size() == 0);
+    assert(l.s.size() == 0);
+    assert(l.v.size() == 1);
+    self.v.push_back(l.v[0]);
+    return self;
+}
 
 
 /******************************************************************
  *                   Variable                                     *
  *****************************************************************/
+
+void Variable::solve(float s)
+{
+    //assert(id != 41);
+    solution = s;
+    solved   = true;
+    for(int i=0; i<c.size(); ++i)
+        if(c[i]->isConstOnly())
+            c[i]->active = false;
+}
+
+Constraint &Variable::addConstraint(int type, float scale, Variable *v)
+{
+    assert(v->id>=0);
+    auto *cc = new Constraint{this, {v}, {scale}, type, 1,0,(int)c.size()};
+    c.push_back(cc);
+    return *cc;
+}
+Constraint &Variable::addConstraint(int type, float scale, Variable *v, float scale2, Variable *v2)
+{
+    assert(v->id>=0);
+    assert(v2->id>=0);
+    auto *cc = new Constraint{this, {v,v2}, {scale,scale2}, type, 1,0,(int)c.size()};
+    c.push_back(cc);
+    return *cc;
+}
+void Variable::addConstraint(int type,
+        float s1, Variable *v1,
+        float s2, Variable *v2,
+        float s3, Variable *v3)
+{
+    assert(v1->id>=0);
+    assert(v2->id>=0);
+    assert(v3->id>=0);
+    c.push_back(new Constraint{this, {v1,v2,v3}, {s1,s2,s3}, type, 1,0,(int)c.size()});
+}
+
+Constraint &Variable::addConstraint(int type)
+{
+    auto *cc = new Constraint{this, {}, {}, type, 1,0,(int)c.size()};
+    c.push_back(cc);
+    return *cc;
+}
+
+void Variable::solveReallyBasicAlgebra()
+{
+    //If any constraint consists of the form
+    //%x OP %a + %b%x
+    //then reduce it to
+    //%x OP %a/(1-b)
+    for(int i=0; i<(int)c.size(); ++i)
+    {
+        auto &cc = *c[i];
+        int self = -1;
+        for(int j=0; j<(int)cc.v.size(); ++j)
+            if(cc.v[j] == this)
+                self = j;
+
+        if(self == -1)
+            continue;
+        float rescale = 1/(1-cc.scale[self]);
+        cc.v.erase(cc.v.begin()+self);
+        cc.scale.erase(cc.scale.begin()+self);
+        for(int j=0; j<(int)cc.scale.size(); ++j)
+            cc.scale[j] *= rescale;
+        cc.dedup();
+    }
+}
+
+//True if b is redundant if a exists
+bool Variable::redundantBound(Constraint &a, Constraint &b)
+{
+    if(a.size() != b.size() || a.type != b.type)
+        return false;
+    if(a.size() == 1 && a.v[0] == b.v[0] && a.scale[0] == b.scale[0])
+        return true;
+    if(a.type == CONSTRAINT_LE) {
+        bool all = true;
+        for(int i=0; i<a.size(); ++i)
+            if(a.v[i] != b.v[i] || a.scale[i] > b.scale[i])
+                all = false;
+        if(all)
+            return true;
+    }
+    return false;
+}
+
+void Variable::removeRedundantBounds()
+{
+    bool to_remove[c.size()];
+    memset(to_remove, 0, sizeof(to_remove));
+    for(int i=0; i<(int)c.size(); ++i) {
+        for(int j=0; j<(int)c.size(); ++j) {
+            if((to_remove[i] || to_remove[j]) || i==j)
+                continue;
+            to_remove[j] = redundantBound(*c[i],*c[j]);
+        }
+    }
+
+    for(int i=c.size()-1; i>=0; --i)
+        if(to_remove[i])
+            c.erase(c.begin()+i);
+}
+
+void Variable::trySolve()
+{
+    if(solved)
+        return;
+    //printf("TRY TO SOLVE MEEEEEEEEEEEEEEEEEEEEEE<%d>\n", id);
+    for(int i=0; i<(int)c.size(); ++i) {
+        auto &cc = *c[i];
+        //printf("type = %d\n", cc.type);
+        //printf("size = %d\n", cc.v.size());
+        //printf("id   = %d\n", cc.v[0]->id);
+        if(cc.type == 0 && cc.v.size() == 1 && cc.v[0]->id == 0)
+            solve(cc.scale[i]);
+        else if(cc.type == 0 && cc.v.size() == 1 && cc.v[0]->solved)
+            solve(cc.scale[0]*cc.v[0]->solution);
+        else if(cc.type == CONSTRAINT_LE && cc.v.size() == 1 && cc.v[0]->id == 0 && cc.scale[0] == 0)
+            solve(0);
+    }
+}
+
+void Variable::maximize()
+{
+    //In case where there is only one usable max rule
+    //consisting of a constant and lower priority variables
+    Constraint *rule = NULL;
+    Constraint *unhandled_eq = NULL;
+    for(int i=0; i<(int)c.size(); ++i) {
+        if(c[i]->type == 1 && c[i]->v[0]->id==0) {
+            if(!rule)
+                rule = c[i];
+            else {
+                printf("Weird maximization criteria\n");
+                //rule->dump("OLD:");
+                //c[i]->dump("NEW:");
+                if(rule->scale[0] > c[i]->scale[0])
+                    rule = c[i];
+            }
+        } else if(c[i]->type == CONSTRAINT_EQ) {
+            unhandled_eq = c[i];
+            unhandled_eq->dump("Possible issue:");
+        }
+    }
+
+    if(!rule){// || unhandled_eq)
+        printf("Failing to solve\n");
+        return;
+    }
+    printf("Attempting solve\n");
+    for(int i=0; i<rule->v.size(); ++i) {
+        if(rule->v[i]->id == 0) {
+            printf("Performing Soultino\n");
+            solve(rule->scale[i]);
+            break;
+        }
+    }
+
+}
+
+bool Variable::hasScalarEquality()
+{
+    Constraint *rule = NULL;
+    for(int i=0; i<(int)c.size(); ++i)
+        if(c[i]->type == 0 && c[i]->v.size() == 1)
+            rule = c[i];
+    if(!rule)
+        return false;
+    return true;
+}
+
+void Variable::inverseRewrite(float scale, Variable *var, int ref)
+{
+    //printf("inverse rewrite()\n");
+    for(int i=var->c.size()-1; i>=0; --i) {
+        auto &cc = *var->c[i];
+        //cc.dump("old");
+        if(cc.type != CONSTRAINT_EQ) {
+            //printf("HERER\n");
+            auto *ncon = new Constraint{this, {}, {}, cc.type, 1,0,(int)c.size()};
+            for(int j=0; j<cc.v.size(); ++j) {
+                //printf("tick...\n");
+                ncon->v.push_back(cc.v[j]);
+                ncon->scale.push_back(scale*cc.scale[j]);
+            }
+            //ncon->dump("rewritten");
+            c.push_back(ncon);
+            ncon->dedup();
+            var->c.erase(var->c.begin()+i);
+        } else if(cc.isScalarEquality() && cc.v[0]->id != ref){
+            //printf("hazard on (%d)...\n",ref);
+            addConstraint(CONSTRAINT_EQ, scale*cc.scale[0], cc.v[0]);
+            //c[c.size()-1]->dump("new");
+            var->c.erase(var->c.begin()+i);
+        }
+        cc.dedup();
+    }
+}
+
+void Variable::rewrite(Variable *var, int ref)
+{
+    //printf("Rewrite(using %%%d on %%%d due to scalar on %%%d)...\n",id,var->id, ref);
+    Constraint *rule = NULL;
+    for(int i=0; i<(int)c.size(); ++i) {
+        if(c[i]->type == 0 && c[i]->v.size() == 1) {
+            rule = c[i];
+            break;
+        }
+    }
+    if(!rule)
+        return;
+    //else
+    //    printf("Found Rule...\n");
+    Variable *rep    = rule->v[0];
+    float rep_scale =  rule->scale[0];
+    //printf("rewrier = %%%d %p %p\n", rep->id, var, rep);
+    if(rep == var)
+        var->inverseRewrite(1/rep_scale, this, ref);
+    else {
+        for(int i=0; i<var->c.size(); ++i) {
+            auto &cc = *var->c[i];
+            for(int j=0; j<cc.v.size(); ++j) {
+                if(cc.v[j] == this) {
+                    cc.v[j]      = rep;
+                    cc.scale[j] *= rep_scale;
+                }
+            }
+            cc.dedup();
+        }
+    }
+}
+
+void Variable::printName(bool force)
+{
+    assert(id >= 0);
+
+    if(id==0 && force) {
+        printf("1");
+    } else if(id != 0) {
+        printf("%%%d", id);
+    }
+}
+
+void Variable::dump(const char *prefix)
+{
+    printf("%sVariable %d<%s>: [", prefix, id, name.c_str());
+    if(solved)
+        printf("solved<%f>,", solution);
+    if(is_fixed)
+        printf("fixed_value,");
+    printf("priority<%d>]\n", priority);
+
+    for(int i=0; i<(int)c.size(); ++i) {
+        c[i]->dump(prefix);
+    }
+}
+
+float Variable::hasNegCorr(Variable *var)
+{
+    for(auto cc:c)
+        for(int i=0; i<cc->v.size(); ++i)
+            if(var == cc->v[i] && sign(cc->scale[i]) == -1)
+                return true;
+    return false;
+}
+float Variable::hasPosCorr(Variable *var)
+{
+    for(auto cc:c)
+        for(int i=0; i<cc->v.size(); ++i)
+            if(var == cc->v[i] && sign(cc->scale[i]) == +1)
+                return true;
+    return false;
+}
 
 void Variable::reduceWithSolved(Variable *var)
 {
@@ -101,6 +477,44 @@ void Variable::reduceWithSolved(Variable *var)
     }
 }
 
+void Variable::clear()
+{
+    c.clear();
+    fixed_value = 0;
+    is_fixed    = 0;
+    solution    = 0;
+    solved      = 0;
+    priority    = 1;
+    id          = 10101;
+    alias       = 0;
+}
+
+void Variable::operator=(LinearConstraint lc)
+{
+    lc.finalize();
+    auto *cc = new Constraint{this, lc.v, lc.s, CONSTRAINT_EQ, 1,0,(int)c.size()};
+    c.push_back(cc);
+}
+void Variable::operator<=(LinearConstraint lc)
+{
+    lc.finalize();
+    auto *cc = new Constraint{this, lc.v, lc.s, CONSTRAINT_LE, 1,0,(int)c.size()};
+    c.push_back(cc);
+}
+void Variable::operator>=(LinearConstraint lc)
+{
+    lc.finalize();
+    auto *cc = new Constraint{this, lc.v, lc.s, CONSTRAINT_GE, 1,0,(int)c.size()};
+    c.push_back(cc);
+}
+
+//{
+//    assert(size_ == vec.size());
+//    for(size_t i=0; i!=size_; ++i)
+//        data_[i] = vec[i];
+//    return *this;
+//}
+
 class Constant: public Variable
 {
     public:
@@ -110,6 +524,33 @@ class Constant: public Variable
         }
 };
 Variable *Const = new Constant();
+/******************************************************************
+ *                   Bounding Box                                 *
+ *****************************************************************/
+void BBox::clear()
+{
+    x.clear();
+    y.clear();
+    w.clear();
+    h.clear();
+}
+
+void BBox::dumpVar(Variable &var)
+{
+    if(var.solved)
+        printf("%f",var.solution);
+    else
+        printf("?");
+}
+void BBox::dump(const char *prefix)
+{
+    printf("%s%s%d - <", prefix,prefix,id);
+    dumpVar(x);printf(",");
+    dumpVar(y);printf(",");
+    dumpVar(w);printf(",");
+    dumpVar(h);printf(">\n");
+}
+
 /******************************************************************
  *                   Layout Problem                               *
  *****************************************************************/
@@ -186,7 +627,8 @@ void LayoutProblem::depSolve()
     //Init
     for(int j=0; j<N; ++j) {
         for(int k=0; k<N; ++k) {
-            if(var[j]->solved || var[k]->solved || var[j]->is_fixed || var[k]->is_fixed)
+            if(var[j]->solved || var[k]->solved || var[j]->is_fixed || var[k]->is_fixed
+                    ||var[k]->priority < var[j]->priority)
                 continue;
             int neg = -1*(var[j]->hasNegCorr(var[k])&&!var[j]->solved&&!var[k]->solved);
             int pos = 1*(var[j]->hasPosCorr(var[k])&&!var[j]->solved&&!var[k]->solved);
@@ -196,52 +638,84 @@ void LayoutProblem::depSolve()
         }
     }
 
+    //printf("  ");
+    //for(int k=0; k<N; ++k)
+    //    printf("%2d",k+1);
+    //printf("\n");
     //for(int j=0; j<N; ++j) {
     //    printf("%2d",j+1);
     //    for(int k=0; k<N; ++k) {
     //        int c = corr_matrix[j*N+k];
-    //        printf(c==-1?"-":c==1?"+":(c==2||c==-2)?"?":"_");
+    //        printf(c==-1?" -":c==1?" +":(c==2||c==-2)?" ?":" _");
     //    }
     //    printf("\n");
     //}
+    //goto giant_hack;
 
     for(int i=0; i<N; ++i) {
         for(int j=0; j<N; ++j) {
             int tmp = corr_matrix[i*N+j];
+            //Now we have the directed relationship of variable
+            //i directed onto j + is good, - is bad, ? is confusion,
+            //_ is no relationship
+            //
+            //if this directed relationship is not _, then
+            //find all j directed onto k and create the 
+            //i onto k relationship which corresponds to the merge
+            //eg i (+) j and j (+) k implies i (+) k
             //printf("Operating on linkage [%d,%d]\n", i+1,j+1);
             if(tmp == 1 || tmp == -2 || tmp == 2) {
                 for(int k=0; k<N; ++k) {
                     if(i==k)
                         continue;
-                    //printf("normal corr [%d,%d] onto [%d,%d]",i+1,k+1,j+1,k+1);
+                    //printf("normal corr [%d,%d] onto [%d,%d]=",j+1,k+1,i+1,k+1);
                     corr_matrix[i*N+k] =
                         confuse_merge(corr_matrix[i*N+k], corr_matrix[j*N+k]);
+                    //printf("%d\n", corr_matrix[i*N+k]);
                 }
-                corr_matrix[j*N+i] = corr_matrix[i*N+j] =
-                    confuse_merge(corr_matrix[i*N+j], corr_matrix[j*N+i]);
+                //corr_matrix[j*N+i] = corr_matrix[i*N+j] =
+                //    confuse_merge(corr_matrix[i*N+j], corr_matrix[j*N+i]);
             } else if(tmp == -1) {
                 for(int k=0; k<N; ++k) {
                     if(i==k)
                         continue;
-                    //printf("neg corr    [%d,%d] onto [%d,%d]",i+1,k+1,j+1,k+1);
+                    //printf("neg corr    [%d,%d] onto [%d,%d]=",j+1,k+1,i+1,k+1);
                     corr_matrix[i*N+k] =
                         confuse_merge(corr_matrix[i*N+k], -corr_matrix[j*N+k]);
-                    corr_matrix[k*N+i] = corr_matrix[i*N+k] =
-                        confuse_merge(corr_matrix[i*N+k], corr_matrix[k*N+i]);
+                    //corr_matrix[k*N+i] = corr_matrix[i*N+k] =
+                    //    confuse_merge(corr_matrix[i*N+k], corr_matrix[k*N+i]);
+                    //printf("%d\n", corr_matrix[i*N+k]);
                 }
             }
         }
+        //printf("  ");
+        //for(int k=0; k<N; ++k)
+        //    printf("%2d",k+1);
+        //printf("\n");
+        //for(int j=0; j<N; ++j) {
+        //    printf("%2d",j+1);
+        //    for(int k=0; k<N; ++k) {
+        //        int c = corr_matrix[j*N+k];
+        //        printf(c==-1?" -":c==1?" +":(c==2||c==-2)?" ?":" _");
+        //    }
+        //    printf("\n");
+        //}
     }
 
+    //printf("  ");
+    //for(int k=0; k<N; ++k)
+    //    printf("%2d",k+1);
+    //printf("\n");
     //for(int j=0; j<N; ++j) {
     //    printf("%2d",j+1);
     //    for(int k=0; k<N; ++k) {
     //        int c = corr_matrix[j*N+k];
-    //        printf(c==-1?"-":c==1?"+":(c==2||c==-2)?"?":"_");
+    //        printf(c==-1?" -":c==1?" +":(c==2||c==-2)?" ?":" _");
     //    }
     //    printf("\n");
     //}
 
+giant_hack:
     for(int i=0; i<N; ++i) {
         if(var[i]->solved || var[i]->is_fixed)
             continue;
@@ -249,9 +723,11 @@ void LayoutProblem::depSolve()
         int good  = true;
         for(int j=0; j<N; ++j) {
             int c = corr_matrix[i*N+j];
-            if(c==-1 || c==2 || c==-2)
-                if(var[j]->priority >= prior)
-                    good = false;
+            if(c)
+                printf("var %%%d(%d) affects %%%d(%d) in a %d manner\n",
+                        var[i]->id,prior,var[j]->id,var[j]->priority, c);
+            if((c==-1 || c==2 || c==-2) && var[j]->priority >= prior)
+                good = false;
         }
         printf("Variable %%%d maxable: %d\n", var[i]->id, good);
         if(good)
@@ -296,11 +772,17 @@ void LayoutProblem::passScalarVariableFixing()
     for(int i=0; i<(int)var.size(); ++i) {
         if(var[i]->solved)
             continue;
-        if(var[i]->hasScalarEquality()) {
-            var[i]->is_fixed = true;
-            for(int j=0;j<(int)var.size(); ++j)
-                if(j!=i)
-                    var[i]->rewrite(var[j]);
+        for(int j=0; j<var[i]->c.size(); ++j) {
+            auto &cc = *var[i]->c[j];
+            if(cc.isScalarEquality()) {
+                //printf("Trying to fix var %%%d to %%%d\n", var[i]->id,
+                //        cc.v[0]->id);
+                var[i]->is_fixed = true;
+                for(int j=0;j<(int)var.size(); ++j)
+                    if(j!=i)
+                        var[i]->rewrite(var[j], cc.v[0]->id);
+                break;
+            }
         }
     }
 }
@@ -322,6 +804,7 @@ void LayoutProblem::passTransferSolvedConstraints()
         int j=(int)var[i]->c.size()-1;
         while(j>=0) {
             auto &cc = *var[i]->c[j];
+            cc.dump("it");
             //printf("SOLVED THING<%d> [%d %d %d]\n", var[i]->id, cc.isScalarEquality(),  !cc.isConstOnly(), cc.type == CONSTRAINT_EQ);
             if(cc.isScalarEquality() && !cc.isConstOnly() && cc.type == CONSTRAINT_EQ) {
                 cc.v[0]->addConstraint(CONSTRAINT_EQ,
@@ -338,7 +821,17 @@ void LayoutProblem::passTransferSolvedConstraints()
                 cc.v[1]->c[cc.v[1]->c.size()-1]->dump("NEW: ");
                 var[i]->c.erase(var[i]->c.begin()+j);
 
+            } else if(cc.v.size() == 2 && cc.v[0]->id == 0 && cc.v[1]->id != 0 &&
+                    cc.type == CONSTRAINT_LE && cc.scale[1] >= 0) {
+                printf("Making a new Transfered Solution Constraint'(%f)...\n",
+                        var[i]->solution);
+                cc.dump("OLD: ");
+                cc.v[1]->addConstraint(CONSTRAINT_LE,
+                        (cc.scale[0]-var[i]->solution)/cc.scale[1], cc.v[0]);
+                cc.v[1]->c[cc.v[1]->c.size()-1]->dump("NEW: ");
+                var[i]->c.erase(var[i]->c.begin()+j);
             }
+
             j--;
         }
     }
@@ -378,6 +871,13 @@ void LayoutProblem::solve()
 
     //Propigate Solutions
     passReduceWithSolved();
+    passInvertTrivialBounds();
+    passTransferSolvedConstraints();
+    passScalarVariableFixing();
+    passScalarVariableFixing();
+    passSolveTrivial();
+    passDedup();
+    passTighten();
 
     printf("-------------------------------------------------\n");
     printf("--------First Dep Solve Input--------------------\n");
@@ -388,8 +888,20 @@ void LayoutProblem::solve()
 
     //Propigate Solutions
     passReduceWithSolved();
+    printf("-------------------------------------------------\n");
+    printf("--------1.5 Depsolve results --------------------\n");
+    printf("-------------------------------------------------\n");
+    dump();
     passInvertTrivialBounds();
     passTransferSolvedConstraints();
+    passScalarVariableFixing();
+    passScalarVariableFixing();
+    passScalarVariableFixing();
+    passSolveTrivial();
+    passSolveBasicAlgebra();
+    passTransferSolvedConstraints();
+    passDedup();
+    passTighten();
 
 
     printf("-------------------------------------------------\n");
@@ -398,13 +910,17 @@ void LayoutProblem::solve()
     dump();
 
     depSolve();
-    dump();
 
 
     //Find any cases of scalar equality and eliminate redundant vars
     passScalarVariableFixing();
+    passScalarVariableFixing();
     passTransferSolvedConstraints();
     passSolveBasicAlgebra();
+    passDedup();
+    passTighten();
+    passReduceWithSolved();
+    passDedup();
 
 
     printf("-------------------------------------------------\n");
@@ -416,6 +932,7 @@ void LayoutProblem::solve()
 
     //Propigate Solutions
     passReduceWithSolved();
+    passScalarVariableFixing();
     passScalarVariableFixing();
     passReduceWithSolved();
     passSolveTrivial();
