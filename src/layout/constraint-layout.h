@@ -27,6 +27,8 @@ class Constraint
         Constraint simplify(Constraint &c);
         bool isTrivialLowerBound();
         bool isScalarEquality();
+        bool isStrictlyNegativeUpper();
+        bool isConstAndNeg();
         void dedup();
 
         void dump(const char *prefix);
@@ -131,9 +133,11 @@ class LayoutProblem
         std::vector<BBox *>     box;
         std::vector<Variable *> var;
         void addVariable(Variable *var);
+        Variable *getNamedVariable(const char *name, int prior);
         void addBoxVars();
         void solve();
         void depSolve();
+        void passSimplex();
         void passSolveTrivial();
         void passReduceWithSolved();
         void passInvertTrivialBounds();
@@ -144,6 +148,7 @@ class LayoutProblem
         void passSolveBasicAlgebra();
         void passDedup();
         void passTighten();
+        void passNoNegativeUpper();
 
         void check_solution();
         void dump();

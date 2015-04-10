@@ -1,6 +1,6 @@
 #include "constraint-layout.h"
 
-#define QUIET_DOWN
+//#define QUIET_DOWN
 #ifdef  QUIET_DOWN
 #define printf(...)
 #endif
@@ -34,6 +34,28 @@ bool Constraint::isTrivialLowerBound()
 bool Constraint::isScalarEquality()
 {
     return type == 0 && v.size() == 1;
+}
+        
+bool Constraint::isStrictlyNegativeUpper()
+{
+    if(type != CONSTRAINT_LE)
+        return false;
+    for(int i=0;i<scale.size();++i)
+        if(scale[i]>0)
+            return false;
+    return true;
+}
+
+bool Constraint::isConstAndNeg()
+{
+    if(type != CONSTRAINT_LE || scale.size() < 2)
+        return false;
+    if(v[0]->id != 0)
+        return false;
+    for(int i=1;i<scale.size();++i)
+        if(scale[i]>0)
+            return false;
+    return true;
 }
         
 void Constraint::dedup()
@@ -361,7 +383,9 @@ bool Variable::hasScalarEquality()
 
 void Variable::inverseRewrite(float scale, Variable *var, int ref)
 {
-    //printf("inverse rewrite()\n");
+    printf("inverse rewrite(%d,%d)\n",priority, var->priority);
+    if(priority < var->priority)
+        priority = var->priority;
     for(int i=var->c.size()-1; i>=0; --i) {
         auto &cc = *var->c[i];
         //cc.dump("old");
@@ -560,22 +584,37 @@ void LayoutProblem::addVariable(Variable *v)
     v->id = var.size()+1;
     var.push_back(v);
 }
+        
+Variable *LayoutProblem::getNamedVariable(const char *name,
+        int prior)
+{
+    for(int i=0;i<(int)var.size(); ++i)
+        if(var[i]->name == name)
+            return var[i];
+
+    //Create Var
+    Variable *var = new Variable;
+    var->name     = name;
+    var->priority = prior;
+    addVariable(var);
+    return var;
+}
 
 void LayoutProblem::addBoxVars()
 {
     //printf("Inserting Boxes...\n");
     for(unsigned i=0; i<box.size(); ++i) {
         auto &b = *box[i];
+        b.x.priority = 100;
+        b.y.priority = 100;
+        b.w.priority = 200;
+        b.h.priority = 200;
+        b.x.name = "x";
+        b.y.name = "y";
+        b.w.name = "w";
+        b.h.name = "h";
         if(b.parent) {
             auto &p = *b.parent;
-            b.x.name = "x";
-            b.y.name = "y";
-            b.w.name = "w";
-            b.h.name = "h";
-            b.x.priority = 100;
-            b.y.priority = 100;
-            b.w.priority = 200;
-            b.h.priority = 200;
             //Lower Bounds
             b.x.addConstraint(CONSTRAINT_GE, 0, Const);
             b.y.addConstraint(CONSTRAINT_GE, 0, Const);
@@ -627,8 +666,7 @@ void LayoutProblem::depSolve()
     //Init
     for(int j=0; j<N; ++j) {
         for(int k=0; k<N; ++k) {
-            if(var[j]->solved || var[k]->solved || var[j]->is_fixed || var[k]->is_fixed
-                    ||var[k]->priority < var[j]->priority)
+            if(var[j]->solved || var[k]->solved || var[j]->is_fixed || var[k]->is_fixed)
                 continue;
             int neg = -1*(var[j]->hasNegCorr(var[k])&&!var[j]->solved&&!var[k]->solved);
             int pos = 1*(var[j]->hasPosCorr(var[k])&&!var[j]->solved&&!var[k]->solved);
@@ -735,6 +773,51 @@ giant_hack:
     }
 }
 
+/**
+ * Ok, none of the simple math works, so find the maximum priority set of
+ * variables
+ *
+ * Translate the problem into 
+ *
+ * Maximize \sum_{\forall i} v_i^2
+ *
+ * Given \forall i v_i >= 0
+ * Subject to Av <= c
+ */ 
+void LayoutProblem::passSimplex()
+{
+    printf("Simplex Pass\n");
+    const unsigned N=var.size();
+    int priority = 0;
+    //Find Maximum Priority Variable Class
+    for(int i=0; i<N; ++i)
+        if(!var[i]->is_fixed && !var[i]->solved)
+            if(var[i]->priority > priority)
+                priority = var[i]->priority;
+    printf("Priority = %d\n", priority);
+    bool activeVariable[N];
+    int  M=0;
+    for(int i=0; i<N; ++i) {
+        if(!var[i]->is_fixed && !var[i]->solved &&
+            var[i]->priority == priority) {
+            var[i]->dump("  ");
+            activeVariable[i] = true;
+            M++;
+        } else
+            activeVariable[i] = false;
+    }
+
+
+    float constraint[M+1];
+    for(int i=0; i<N; ++i) {
+        for(int j=0; j<M+1; ++j)
+            constraint[j] = 0;
+
+    }
+    fflush(stdout);
+    exit(1);
+}
+
 void LayoutProblem::passSolveTrivial()
 {
     for(int i=0; i<(int)var.size(); ++i)
@@ -770,7 +853,7 @@ void LayoutProblem::passInvertTrivialBounds()
 void LayoutProblem::passScalarVariableFixing()
 {
     for(int i=0; i<(int)var.size(); ++i) {
-        if(var[i]->solved)
+        if(var[i]->solved || var[i]->is_fixed)
             continue;
         for(int j=0; j<var[i]->c.size(); ++j) {
             auto &cc = *var[i]->c[j];
@@ -860,8 +943,39 @@ void LayoutProblem::passDedup()
 void LayoutProblem::passTighten()
 {
     for(int i=0; i<(int)var.size(); ++i) {
+        //Add more bounds
+        float best = 1.0/0.0;
+        bool hasBest = false;
+        for(int j=0; j<var[i]->c.size(); ++j) {
+            auto &cc = *var[i]->c[j];
+            if(cc.isConstAndNeg() && cc.scale[0] < best) {
+                hasBest = true;
+                best = cc.scale[0];
+            }
+        }
+
+        if(hasBest)
+            *var[i] <= best;
         var[i]->removeRedundantBounds();
     }
+}
+
+void LayoutProblem::passNoNegativeUpper()
+{
+    for(int i=0; i<(int)var.size(); ++i) {
+        if(var[i]->solved)
+            continue;
+        for(int j=0; j<var[i]->c.size(); ++j) {
+            auto &cc = *var[i]->c[j];
+            if(cc.isStrictlyNegativeUpper()) {
+                var[i]->solve(0);
+                for(int k=0;k<cc.v.size();++k)
+                    if(cc.v[k]->id != 0)
+                        cc.v[k]->solve(0);
+            }
+        }
+    }
+
 }
 
 void LayoutProblem::solve()
@@ -873,8 +987,14 @@ void LayoutProblem::solve()
     passReduceWithSolved();
     passInvertTrivialBounds();
     passTransferSolvedConstraints();
-    passScalarVariableFixing();
-    passScalarVariableFixing();
+    passNoNegativeUpper();
+    printf("-------------------------------------------------\n");
+    printf("--------Uhhh Input-------------------------------\n");
+    printf("-------------------------------------------------\n");
+    dump();
+    for(int i=0; i<10; ++i)
+        passScalarVariableFixing();
+    //passScalarVariableFixing();
     passSolveTrivial();
     passDedup();
     passTighten();
@@ -946,6 +1066,7 @@ void LayoutProblem::solve()
     printf("---------Fourth Dep Solve Input------------------\n");
     printf("-------------------------------------------------\n");
     dump();
+    passSimplex();
 
     depSolve();
     passSolveTrivial();
@@ -997,6 +1118,8 @@ void LayoutProblem::dump()
     }
     printf("\tVariables: %d\n", var.size());
     for(int i=0; i<(int)var.size(); ++i) {
+        if(var[i]->is_fixed)
+            continue;
         var[i]->dump("\t");
     }
 }

@@ -137,6 +137,10 @@ BBox &zWidget::layoutSubProblems(LayoutProblem &prob, BBox &parent)
 {
     bbox.parent = &parent;
     bbox.clear();
+
+    if(!m_zexpandable)
+        bbox.h = m_zaspect*bbox.w;
+
     return bbox;
 }
 

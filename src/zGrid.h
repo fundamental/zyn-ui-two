@@ -28,7 +28,6 @@ public slots:
         self.y = 0;
         self.w = width();
         self.h = height();
-        Variable textHeight;
         Variable *padh = new Variable[m_rows*m_cols];
         Variable *padw = new Variable[m_rows*m_cols];
         Variable *rh   = new Variable[m_rows];
@@ -36,9 +35,6 @@ public slots:
         BBox    **ch   = new BBox*[m_rows*m_cols];
 
         prob.addBox(self);
-        prob.addVariable(&textHeight);
-        textHeight.name = "textHeight";
-        textHeight.priority = 200;
         memset(ch, 0, sizeof(void*)*m_rows*m_cols);
         for(int i=0; i<childItems().size(); ++i)
         {
@@ -111,9 +107,6 @@ public slots:
         }
         
 
-        ch[1]->h = textHeight;
-        ch[2]->h = textHeight;
-        ch[5]->h = textHeight;
         prob.addBoxVars();
         prob.dump();
 

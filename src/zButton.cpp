@@ -31,10 +31,7 @@ BBox &zButton::layoutSubProblems(LayoutProblem &prob, BBox &parent)
 {
     bbox.parent = &parent;
     bbox.clear();
-    if(m_renderer == "default") {
-        printf("Setting height/width stuff\n");
-        bbox.h = m_zaspect*bbox.w;
-    } else
-        bbox.h = bbox.w;
+    auto &var = *prob.getNamedVariable("textHeight", 200);
+    var = bbox.h;
     return bbox;
 }
