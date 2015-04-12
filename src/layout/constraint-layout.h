@@ -137,6 +137,9 @@ class LayoutProblem
         void addBoxVars();
         void solve();
         void depSolve();
+        std::vector<std::vector<float>>
+        recurseConstraint(int var, float gain,
+                bool *active, int *rw, std::vector<float> constraint);
         void passSimplex();
         void passSolveTrivial();
         void passReduceWithSolved();

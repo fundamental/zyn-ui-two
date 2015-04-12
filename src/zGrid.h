@@ -21,6 +21,8 @@ public slots:
     {
         printf("\n\n\nLAYYYYYYYYYYYYYYYYOUUUUUUUUUUUUUUUUUUUUUUUTTTTTT\n");
         printf("<0,0,%f,%f>#%d\n", width(), height(),childItems().size());
+        if(width() == 0 || height() == 0)
+            return;
 
         LayoutProblem prob;
         BBox self;
@@ -51,19 +53,23 @@ public slots:
 
         for(int i=0; i<m_rows; ++i) {
             rh[i].name = "row-height";
-            rh[i].priority = 900;
+            rh[i].priority = 500;
             rh[i] = height()/m_rows;
             prob.addVariable(rh+i);
+            auto &cc = rh[i].addConstraint(CONSTRAINT_LE, 1, &self.h);
+            for(int j=0; j<m_rows; ++j)
+                if(i!=j)
+                    cc.addVar(-1.0, rh[j]);
         }
         for(int i=0; i<m_cols; ++i) {
             cw[i].name = "column-width";
-            cw[i].priority = 50;
+            cw[i].priority = 500;
             cw[i] = width()/m_cols;
             prob.addVariable(cw+i);
             auto &cc = cw[i].addConstraint(CONSTRAINT_LE, 1, &self.w);
-            //for(int j=0; j<m_cols; ++j)
-            //    if(i!=j)
-            //        cc.addVar(-1.0, cw[j]);
+            for(int j=0; j<m_cols; ++j)
+                if(i!=j)
+                    cc.addVar(-1.0, cw[j]);
         }
     
         for(int i=0; i<m_rows*m_cols; ++i)
@@ -76,7 +82,8 @@ public slots:
             child.parent = &self;
             printf("row=%d,col=%d\n", row, col);
 
-            cw[col] >= child.w;
+            padh[i] = rh[row]-child.h;
+            padw[i] = cw[col]-child.w;
             auto *cy = &child.y.addConstraint(CONSTRAINT_EQ, 0.5, padh+i);
             auto *cx = &child.x.addConstraint(CONSTRAINT_EQ, 0.5, padw+i);
             for(int i=0; i<row; ++i)
@@ -84,19 +91,19 @@ public slots:
             for(int i=0; i<col; ++i)
                 cx->addVar(1.0, cw[i]);
 
-            cy = &child.y.addConstraint(CONSTRAINT_LE, -0.5, padh+i, -1, &child.h);
-            cx = &child.x.addConstraint(CONSTRAINT_LE, -0.5, padw+i, -1, &child.w);
-            for(int i=0; i<row+1; ++i)
-                cy->addVar(1.0, rh[i]);
-            for(int i=0; i<col+1; ++i)
-                cx->addVar(1.0, cw[i]);
+            //cy = &child.y.addConstraint(CONSTRAINT_LE, -0.5, padh+i, -1, &child.h);
+            //cx = &child.x.addConstraint(CONSTRAINT_LE, -0.5, padw+i, -1, &child.w);
+            //for(int i=0; i<row+1; ++i)
+            //    cy->addVar(1.0, rh[i]);
+            //for(int i=0; i<col+1; ++i)
+            //    cx->addVar(1.0, cw[i]);
             //auto &ch_ = child.h.addConstraint(CONSTRAINT_LE, -1, &child.y, -1, padh+i);
             //for(int i=0; i<row+1; ++i)
             //    ch_.addVar(1.0, rh[i]);
             //for(int i=0; i<col; ++i)
             //    cw_.addVar(1.0, cw[i]);
-            child.w <= cw[col]-padw[i];
-            child.h <= rh[row]-padh[i];
+            //child.w <= cw[col]-padw[i];
+            //child.h <= rh[row]-padh[i];
             padh[i].name = "padh";
             padw[i].name = "padw";
             padh[i].priority = 120;

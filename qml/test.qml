@@ -22,26 +22,26 @@ ZLayout {
         expandable: true
         zscale: 4
     }
-    HLayout {
-        property real zscale: 5
-        property real aspect: 10
-        id: row
-        VSlider {}
-        VSlider {}
-        VSlider {}
-        VSlider {}
-    }
-    VLayout {
-        Knob {}
-        HSlider {}
-        HSlider {}
-        HSlider {}
-    }
-    DropDown {
-        aspect: 0.333
-    }
-    TextList {
-        zscale: 3
-        aspect: 3
-    }
+    ////HLayout {
+    ////    property real zscale: 5
+    ////    property real aspect: 10
+    ////    id: row
+    ////    VSlider {}
+    ////    VSlider {}
+    ////    VSlider {}
+    ////    VSlider {}
+    ////}
+    ////VLayout {
+    ////    Knob {}
+    ////    HSlider {}
+    ////    HSlider {}
+    ////    HSlider {}
+    ////}
+    //DropDown {
+    //    aspect: 0.333
+    //}
+    //TextList {
+    //    zscale: 3
+    //    aspect: 3
+    //}
 }

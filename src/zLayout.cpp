@@ -19,7 +19,8 @@ void zLayout::doLayout()
 {
     //Assume m_vertical = false for now
     LayoutProblem prob;
-    BBox self;
+    BBox *leak = new BBox;
+    BBox &self = *leak;
     self.x = 0;
     self.y = layoutY();
     self.w = width();
@@ -32,7 +33,9 @@ void zLayout::doLayout()
         return;
 
     rh->name = "row-height";
+    *rh = 100;
     sv->name = "scale-variable";
+    sv->priority = 200;
 
     prob.addBox(self);
     prob.addVariable(sv);
@@ -65,7 +68,8 @@ void zLayout::doLayout()
             ch[j] = &obj_->layoutSubProblems(prob, self);
         else
             ch[j] = new BBox;
-        *sv = scale*ch[j]->h;
+        if(!expandable)
+            *sv = scale*ch[j]->w;
         if(j == 0) {
             ch[j]->x = 0;
         } else {
@@ -78,7 +82,6 @@ void zLayout::doLayout()
         ph[j].priority = 120;
         prob.addBox(*ch[j]);
         prob.addVariable(ph+j);
-        ph[j] = 0;
 
 
         //layoutBoundBox(layout, aspect, scale);

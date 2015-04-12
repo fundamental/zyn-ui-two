@@ -323,8 +323,10 @@ void Variable::trySolve()
         //printf("type = %d\n", cc.type);
         //printf("size = %d\n", cc.v.size());
         //printf("id   = %d\n", cc.v[0]->id);
+        //printf("something %f\n", cc.scale[0]);
+        assert(cc.v.size() == cc.scale.size());
         if(cc.type == 0 && cc.v.size() == 1 && cc.v[0]->id == 0)
-            solve(cc.scale[i]);
+            solve(cc.scale[0]);
         else if(cc.type == 0 && cc.v.size() == 1 && cc.v[0]->solved)
             solve(cc.scale[0]*cc.v[0]->solution);
         else if(cc.type == CONSTRAINT_LE && cc.v.size() == 1 && cc.v[0]->id == 0 && cc.scale[0] == 0)
@@ -430,7 +432,8 @@ void Variable::rewrite(Variable *var, int ref)
     //printf("rewrier = %%%d %p %p\n", rep->id, var, rep);
     if(rep == var)
         var->inverseRewrite(1/rep_scale, this, ref);
-    else {
+    //else
+    {
         for(int i=0; i<var->c.size(); ++i) {
             auto &cc = *var->c[i];
             for(int j=0; j<cc.v.size(); ++j) {
@@ -602,9 +605,10 @@ Variable *LayoutProblem::getNamedVariable(const char *name,
 
 void LayoutProblem::addBoxVars()
 {
-    //printf("Inserting Boxes...\n");
+    printf("Inserting Boxes...\n");
     for(unsigned i=0; i<box.size(); ++i) {
         auto &b = *box[i];
+        printf("Parent = %p\n", b.parent);
         b.x.priority = 100;
         b.y.priority = 100;
         b.w.priority = 200;
@@ -622,10 +626,10 @@ void LayoutProblem::addBoxVars()
             b.h.addConstraint(CONSTRAINT_GE, 0, Const);
 
             //Upper Bounds
-            b.x.addConstraint(CONSTRAINT_LE, 1, &p.w);
-            b.y.addConstraint(CONSTRAINT_LE, 1, &p.h);
-            b.w.addConstraint(CONSTRAINT_LE, 1, &p.w, -1, &b.x);
-            b.h.addConstraint(CONSTRAINT_LE, 1, &p.h, -1, &b.y);
+            b.x <= p.w - b.w;
+            b.y <= p.h - b.h;
+            b.w <= p.w - b.x;
+            b.h <= p.h - b.y;
         }
         addVariable(&box[i]->x);
         addVariable(&box[i]->y);
@@ -773,17 +777,229 @@ giant_hack:
     }
 }
 
-/**
- * Ok, none of the simple math works, so find the maximum priority set of
- * variables
- *
- * Translate the problem into 
- *
- * Maximize \sum_{\forall i} v_i^2
- *
- * Given \forall i v_i >= 0
- * Subject to Av <= c
- */ 
+void simplexResult(float *data, int rows, int cols, float *sol)
+{
+    float results[cols-1];
+    memset(results, 0, sizeof(results));
+    for(int i=0; i<cols-1; ++i) {
+        int sel = -1;
+        for(int j=0; j<rows; ++j) {
+            //printf("[%d,%d] = %d\n",i,j,sel);
+            if(sel == -1 && data[i+j*cols] == 1.0)
+                sel = j;
+            else if(sel != -1 && data[i+j*cols] == 1.0) {
+                sel = -1;
+                break;
+            } else if(data[i+j*cols] != 0.0) {
+                sel = -1;
+                break;
+            }
+        }
+        if(sel != -1) {
+            //printf("sel good[%d]\n", sel);
+            results[i] = data[(cols-1)+sel*cols];
+        }
+    }
+    printf("solution:   [");
+    for(int k=0; k<cols-1; ++k) {
+        float v = results[k];
+        if(fabs(v) > 1e-3)
+            printf("%8.2f%s",v,k==cols-2?"]\n":",");
+        else
+            printf("        %s",k==cols-2?"]\n":",");
+    }
+    if(sol)
+        for(int i=0; i<cols-1;++i)
+            sol[i] = results[i];
+
+}
+
+void simplexCheck(float *data, float *orig, int rows, int cols)
+{
+    //solve the current and compare to the original matrix
+    float new_solution[cols-1];
+    simplexResult(data, rows, cols, new_solution);
+    float old_b[rows-1];
+    float new_b[rows-1];
+    for(int i=0; i<rows-1; ++i)
+        old_b[i] = orig[(cols-1)+i*cols];
+    
+    for(int i=0; i<rows-1; ++i) {
+        new_b[i] = 0;
+        for(int j=0; j<cols-1; ++j)
+            new_b[i] += new_solution[j]*orig[j+i*cols];
+    }
+
+    printf("Verification:\n");
+    printf("old: [");
+    for(int k=0; k<rows-1; ++k) {
+        float v = old_b[k];
+        if(fabs(v) > 1e-3)
+            printf("%8.2f%s",v,k==rows-2?"]\n":",");
+        else
+            printf("        %s",k==rows-2?"]\n":",");
+    }
+    printf("new: [");
+    for(int k=0; k<rows-1; ++k) {
+        float v = new_b[k];
+        if(fabs(v) > 1e-3)
+            printf("%8.2f%s",v,k==rows-2?"]\n":",");
+        else
+            printf("        %s",k==rows-2?"]\n":",");
+    }
+    for(int k=0; k<rows-1; ++k)
+        assert(fabs(new_b[k]-old_b[k]) < 1e-4);
+
+
+}
+
+void simplexRescale(float *data, int rows, int cols, int r, int c)
+{
+    const float pv = data[c+r*cols];
+    for(int i=0; i<cols; ++i)
+        data[i+r*cols] /= pv;
+}
+
+void simplexPerformPivot(float *data, int rows, int cols, int r, int c)
+{
+    simplexRescale(data,rows, cols, r, c);
+    //ok, so the row is static
+    //eliminate this variable from other rows via gauss elim
+    const float pv = data[c+r*cols];
+    for(int i=0; i<rows; ++i) {
+        if(i==r)
+            continue;
+        float scale = data[c+i*cols]/pv;
+        for(int j=0; j<cols; ++j)
+            data[j+i*cols] -= scale*data[j+r*cols];
+    }
+}
+
+void simplexColPow(float *data, int rows, int cols, int c, float &pow, int &idx, float *vvv=NULL)
+{
+    printf("Pivot Col = %d\n", c);
+    float pivot_value = 1.0/0.0;//Inf
+    int selected_row = -1;
+    for(int i=0; i<rows-1; ++i) {
+        float b   = data[cols-1+i*cols];
+        float val = data[c+i*cols];
+        float ratio = b/val;
+        //printf("ratio = %f<%f/%f>", ratio,b,val);
+        if(ratio > 0  && ratio < pivot_value) {
+            //printf("*\n");
+            selected_row = i;
+            pivot_value  = val;
+            if(vvv)
+                *vvv = ratio;
+        } else;
+            //printf("\n");
+    }
+    if(selected_row == -1) {
+        for(int i=0; i<rows-1; ++i) {
+            float b   = data[cols-1+i*cols];
+            float val = data[c+i*cols];
+            float ratio = b/val;
+            //printf("ratio = %f<%f/%f>", ratio,b,val);
+            if(((ratio > 0 || b==0) && b>=0 && ratio < pivot_value)) {
+                //printf("*\n");
+                selected_row = i;
+                pivot_value  = val;
+                if(vvv)
+                    *vvv = ratio;
+            } else;
+            //printf("\n");
+        }
+    }
+    printf("Pivot row = %d\n", selected_row);
+    if(selected_row != -1) {
+        assert(pivot_value > 0);
+        idx = selected_row;
+        pow = pivot_value;
+    } else {
+        printf("POSSIBLY UNBOUNDED\n");
+        //for(int i=0; i<rows-1; ++i) {
+        //    float b   = data[cols-1+i*cols];
+        //    float val = data[c+i*cols];
+        //    float ratio = b/val;
+        //    printf("ratio = %f<%f/%f>", ratio,b,val);
+        //    if((ratio == 0 || ratio == -0) && val!=0) {
+        //        printf("*\n");
+        //        printf("Performing recovery...\n");
+        //        idx = i;
+        //        pivot_value  = 0;
+        //        return;
+        //    } else printf("\n");
+        //}
+        idx = -1;
+        pivot_value = 0;
+    }
+}
+
+bool simplexPivotConstraints(float *data, int rows, int cols)
+{
+    printf("Verifying B>=0\n");
+    int sel_row = -1;
+    for(int i=0; i<rows-1; ++i) {
+        if(data[(cols-1)+i*cols] < 0) {
+            sel_row = i;
+            break;
+        }
+    }
+    printf("B>=0 row %d\n", sel_row);
+    if(sel_row == -1)
+        return false;
+    for(int i=0; i<cols; ++i) {
+        data[i+sel_row*cols] *= -1;
+    }
+    return true;
+}
+
+bool simplexPivot(float *data, int rows, int cols, int *pivoted)
+{
+    if(simplexPivotConstraints(data, rows, cols))
+        return true;
+
+    int selected_col=-1;
+    float selected_val=-1e-9;
+    for(int i=0; i<cols-1; ++i) {
+        float val = data[i+(rows-1)*cols];
+        //if(val < 0) {
+        //    selected_val = val;
+        //    selected_col = i;
+        //    //break;
+        //}
+        if(val < selected_val) {
+            selected_val = val;
+            selected_col = i;
+            //int cc=-1;
+            //float vv=0;
+            //float vvv=0;
+            //simplexColPow(data, rows, cols, i, vv, cc, &vvv);
+            //if(cc != -1 && (selected_val != -1 || (selected_col == -1 && vvv >0))) {
+            //    printf("new leader<%f,%d>\n", vv, i);
+            //    selected_val = val;
+            //    selected_col = i;
+            //}
+        }
+    }
+    printf("Objective value = %f\n", selected_val);
+    if(selected_col<0)
+        return false;
+    float pivot_value = 1.0/0.0;//Inf
+    int selected_row = -1;
+    float vvv = 0;
+    simplexColPow(data, rows, cols, selected_col, pivot_value, selected_row, &vvv);
+
+    if(selected_row < 0)
+        return false;
+        //assert(false);
+    pivoted[selected_col] = selected_row;
+    printf("Selected pivot = [%d,%d]\n", selected_row, selected_col);
+    printf("Pivot Value = %f<%f>\n", pivot_value,vvv);
+    simplexPerformPivot(data, rows, cols, selected_row, selected_col);
+    return true;
+}
+
 void LayoutProblem::passSimplex()
 {
     printf("Simplex Pass\n");
@@ -795,8 +1011,9 @@ void LayoutProblem::passSimplex()
             if(var[i]->priority > priority)
                 priority = var[i]->priority;
     printf("Priority = %d\n", priority);
-    bool activeVariable[N];
-    int  M=0;
+    bool activeVariable[N+1];
+    unsigned M=0;//Active Variables
+    unsigned L=0;//Variables That Exist
     for(int i=0; i<N; ++i) {
         if(!var[i]->is_fixed && !var[i]->solved &&
             var[i]->priority == priority) {
@@ -805,17 +1022,399 @@ void LayoutProblem::passSimplex()
             M++;
         } else
             activeVariable[i] = false;
+        if(!var[i]->is_fixed && !var[i]->solved)
+            L++;
+    }
+
+    int rewrite[N+1];
+    {
+        int id=1;
+        rewrite[0] = 0;
+        for(int i=0; i<N; ++i) {
+            rewrite[var[i]->id] = id;
+            if(!var[i]->is_fixed && !var[i]->solved && var[i]->id != 0)
+                id++;
+        }
+        printf("Variables = %d+1\n", L);
+        for(int i=0;i<N+1;++i)
+            printf("rewrite[%d] = %d<%d>\n", i, rewrite[i], i==0?-1:activeVariable[i-1]);
     }
 
 
-    float constraint[M+1];
+    std::vector<std::vector<float>> constraints;
+    std::vector<bool> has_slack;
+    int slack_vars = 0;
     for(int i=0; i<N; ++i) {
-        for(int j=0; j<M+1; ++j)
-            constraint[j] = 0;
-
+        if(var[i]->is_fixed || var[i]->solved)
+            continue;
+        printf("Variable %%%d\n", var[i]->id);
+        auto &v = *var[i];
+        for(int j=0; j<v.c.size(); ++j) {
+            std::vector<float> rc;
+            rc.resize(L+1);
+            for(int i=0;i<rc.size();++i)
+                rc[i] = 0;
+            auto &c = *v.c[j];
+            if(c.type == CONSTRAINT_GE)
+                continue;
+            c.dump("con");
+            rc[rewrite[var[i]->id]] = -1;
+            for(int k=0; k<c.size(); ++k) {
+                printf("%d?\n",c.v[k]->id);
+                assert(rewrite[c.v[k]->id] >=0);
+                assert(rewrite[c.v[k]->id] < rc.size());
+                rc[rewrite[c.v[k]->id]] += c.scale[k];
+            }
+            for(int k=1; k<rc.size(); ++k)
+                rc[k] *= -1;
+            bool doSkip = false;
+            for(auto t:constraints) {
+                float diff = 0;
+                for(int k=0; k<rc.size(); ++k)
+                    diff += fabs(t[k]-rc[k]);
+                if(diff < 0.01)
+                    doSkip = true;
+            }
+            if(doSkip)
+                continue;
+            if(c.type == CONSTRAINT_LE) {
+                has_slack.push_back(true);
+                slack_vars++;
+            } else {
+                has_slack.push_back(false);
+            }
+            printf("constraint: [");
+            for(int k=0; k<rc.size(); ++k)
+                printf("%f%s",rc[k],k==rc.size()-1?"]\n":",");
+            constraints.push_back(rc);
+        }
     }
+    //Build Always True Constraint
+    if(0){
+        std::vector<float> rc;
+        rc.resize(L+1);
+        rc[0] = 0;
+        for(int i=0; i<L; ++i)
+            rc[i+1] = -1;
+        slack_vars++;
+        has_slack.push_back(true);
+        constraints.push_back(rc);
+    }
+
+
+    for(int i=0; i<constraints.size(); ++i) {
+        auto &c=constraints[i];
+        float first_one=0;
+        for(int j=1; j<c.size(); ++j) {
+            if(first_one != 0)
+                c[j] /= first_one;
+            else if(c[j] != 0) {
+                first_one = fabs(c[j]);
+                c[j] /= first_one;
+            }
+        }
+        if(first_one != 0)
+            c[0] /= first_one;
+    }
+
+    //XXX XXX
+    //Todo normalize the constraints and kill off the loose constraints
+    
+
+    //1 row per constraint and 1 for the objective
+    //1 col per variable 1 col per slack 1 col per upper bound
+    int   rows = constraints.size()+1;
+    int   cols = slack_vars+L+1;
+    float *matrix_data = new float[rows*cols];
+    memset(matrix_data, 0, rows*cols*sizeof(float));
+    int slacky = 0;
+    for(int i=0; i<rows-1; ++i) {
+        if(has_slack[i])
+            matrix_data[L+(slacky++)+i*cols] = 1;
+        assert(constraints[i][0]>=0);
+        matrix_data[cols-1+i*cols] = constraints[i][0];
+        for(int j=0; j<L; ++j)
+            matrix_data[j+i*cols] = constraints[i][j+1];
+    }
+    int rebuild[N];
+    //for(int i=0; i<L; ++i) {
+    //    matrix_data[i+(rows-1)*cols] = -0.01;
+    //}
+    for(int i=0; i<N; ++i) {
+        int j = var[i]->id;
+        if(var[i]->priority == priority && !var[i]->is_fixed) {
+            printf("rewrite[%d]=%d\n", j, rewrite[j]);
+            assert(rewrite[j]>0);
+            matrix_data[rewrite[j]-1+(rows-1)*cols] = -1;
+            printf("col %d is the rewrite of var %%%d\n", rewrite[j]-1, j);
+            rebuild[i] = rewrite[i]-1;
+        } else {
+            rebuild[i] = -1;
+            //if(matrix_data[rewrite[i]-1+(rows-1)*cols] == 0)
+            //    matrix_data[rewrite[i]-1+(rows-1)*cols] = -0.01;
+        }
+    }
+
+    float *matrix_orig = new float[rows*cols];
+    for(int i=0; i<rows*cols; ++i)
+        matrix_orig[i] = matrix_data[i];
+
+    int pivoted[rows];
+    for(int i=0; i<rows; ++i)
+        pivoted[i] = -1;
+
+    printf("Simplex Initialization:\n");
+    for(int i=-1; i<rows; ++i) {
+        printf("constraint: [");
+        for(int k=0; k<cols; ++k) {
+            float v = i==-1?k:matrix_data[k+i*cols];
+            if(fabs(v) > 1e-3)
+                printf("%8.2f%s",v,k==cols-1?"]\n":",");
+            else
+                printf("        %s",k==cols-1?"]\n":",");
+        }
+    }
+    simplexCheck(matrix_data, matrix_orig, rows, cols);
+    //simplexResult(matrix_data, rows, cols, NULL);
+
+    for(int _=0;_<100;++_) {
+        printf("Simplex Pivot#%d:\n",_);
+        if(!simplexPivot(matrix_data, rows, cols, pivoted))
+            break;
+        for(int i=-1; i<rows; ++i) {
+            printf("constraint: [");
+            for(int k=0; k<cols; ++k) {
+                float v = i==-1?k:matrix_data[k+i*cols];
+                if(fabs(v) > 1e-3)
+                    printf("%8.2g%s",v,k==cols-1?"]\n":",");
+                else
+                    printf("        %s",k==cols-1?"]\n":",");
+            }
+        }
+        simplexCheck(matrix_data, matrix_orig, rows, cols);
+        //simplexResult(matrix_data, rows, cols);
+    }
+    printf("Solutions:\n");
+    for(int i=0; i<rows; ++i) {
+        if(pivoted[i] != -1) {
+            printf("x_%d = %f\n", i, matrix_data[cols-1+pivoted[i]*cols]);
+        }
+    }
+    printf("Pivots:\n");
+    for(int i=0; i<rows; ++i)
+        if(pivoted[i] != -1)
+            printf("<%d,%d>",i,pivoted[i]);
+    for(int i=0; i<N; ++i)
+    {
+        if(var[i]->is_fixed || var[i]->solved)
+            continue;
+        //int search = rewrite[i];
+        if(rebuild[i] != -1 && pivoted[rebuild[i]] != -1) {
+            printf("%%%d <= index <<%d,%d>> [%d,%d]\n", var[i]->id, i, rebuild[i], cols-1, pivoted[rebuild[i]]);
+            float val = matrix_data[cols-1+pivoted[rebuild[i]]*cols];
+            if(val==val && val < 1e9)
+                var[i]->solve(val);
+            printf("%%%d = %f\n", var[i]->id, val);
+        }
+    }
+
+}
+
+/**
+ * Ok, none of the simple math works, so find the maximum priority set of
+ * variables
+ *
+ * Translate the problem into 
+ *
+ * Maximize \sum_{\forall i} v_i^2
+ *
+ * Given \forall i v_i >= 0
+ * Subject to Av <= c
+ */ 
+#if 0
+void LayoutProblem::passSimplex()
+{
+    printf("Simplex Pass\n");
+    const unsigned N=var.size();
+    int priority = 0;
+    //Find Maximum Priority Variable Class
+    for(int i=0; i<N; ++i)
+        if(!var[i]->is_fixed && !var[i]->solved)
+            if(var[i]->priority > priority)
+                priority = var[i]->priority;
+    printf("Priority = %d\n", priority);
+    bool activeVariable[N+1];
+    int  M=0;
+    for(int i=0; i<N; ++i) {
+        if(!var[i]->is_fixed && !var[i]->solved &&
+            var[i]->priority == priority) {
+            var[i]->dump("  ");
+            activeVariable[var[i]->id] = true;
+            M++;
+        } else
+            activeVariable[var[i]->id] = false;
+    }
+
+    int rewrite[N+1];
+    int id=0;
+    rewrite[0] = 0;
+    for(int i=0; i<N+1; ++i) {
+        if(activeVariable[i])
+            id++;
+        rewrite[i] = id;
+    }
+    for(int i=0;i<N;++i)
+        printf("rewrite[%d] = %d<%d>\n", i, rewrite[i], activeVariable[i]);
+
+
+    std::vector<std::vector<float>> constraints;
+    std::vector<std::vector<float>> rc;
+    for(int i=0; i<N; ++i) {
+        if(!activeVariable[i])
+            continue;
+        auto &v = *var[i];
+        //v.dump("real  ");
+        for(int j=0; j<v.c.size(); ++j) {
+            //printf("v.c[%d]\n", j);
+            //v.c[j]->dump("  ");
+            //fflush(stdout);
+            auto &c = *v.c[j];
+            if(c.type == CONSTRAINT_GE)
+                continue;
+            rc.clear();
+            rc.push_back(std::vector<float>());
+            rc[0].resize(M+1);
+            for(int k=0; k<M+1; ++k)
+                rc[0][k] = 0;
+            rc[0][rewrite[i]] = -1;
+            //printf("constraint: [");
+            //for(int k=0; k<M+1; ++k)
+            //    printf("%f%s",constraint[k],k==M?"]\n":",");
+            for(int k=0; k<c.size(); ++k) {
+                std::vector<std::vector<float>> rc_next;
+                for(auto cur:rc) {
+                    //printf("adding' <%d>(%d)\n", c.v[k]->id, rewrite[c.v[k]->id]);
+                    if(activeVariable[c.v[k]->id] || c.v[k]->id == 0) {
+                        //printf("non-recursive\n");
+                        cur[rewrite[c.v[k]->id]] += c.scale[k];
+                        rc_next.push_back(cur);
+                    } else {
+                        //c.dump("recursive");
+                        //c.v[k]->dump("rvar ");
+                        auto res = recurseConstraint(c.v[k]->id, (float)c.scale[k],
+                                (bool*)activeVariable, (int*)rewrite, cur);
+                        for(auto x:res)
+                            rc_next.push_back(x);
+                    }
+                }
+                rc = rc_next;
+            }
+            //printf("constraint: [");
+            //for(int k=0; k<M+1; ++k)
+            //    printf("%f%s",constraint[k],k==M?"]\n":",");
+            //printf("checking <%d>(%d)\n", i, rewrite[i]);
+            //printf("constraint[rewrite[%d]] == %f\n", i, constraint[rewrite[i]]);
+            for(auto cur:rc) {
+                for(int k=1; k<M+1; ++k)
+                    cur[k] *= -1;
+                //printf("constraint: [");
+                //for(int k=0; k<M+1; ++k)
+                //    printf("%8.2f%s",cur[k],k==M?"]\n":",");
+                constraints.push_back(cur);
+            }
+        }
+    }
+
+    int   rows = constraints.size()+1;
+    int   cols = constraints.size()+M+1;
+    float *matrix_data = new float[rows*cols];
+    memset(matrix_data, 0, rows*cols*sizeof(float));
+    for(int i=0; i<rows-1; ++i) {
+        matrix_data[M+i+i*cols] = 1;
+        matrix_data[cols-1+i*cols] = constraints[i][0];
+        for(int j=0; j<M; ++j)
+            matrix_data[j+i*cols] = constraints[i][j+1];
+    }
+    for(int i=0; i<M; ++i)
+        matrix_data[i+(rows-1)*cols] = -1;
+    int pivoted[rows];
+    for(int i=0; i<rows; ++i)
+        pivoted[i] = -1;
+
+    printf("Simplex Initialization:\n");
+    for(int i=0; i<rows; ++i) {
+        printf("constraint: [");
+        for(int k=0; k<cols; ++k)
+            printf("%8.2f%s",matrix_data[k+i*cols],k==cols-1?"]\n":",");
+    }
+
+    for(int _=0;_<10;++_) {
+        printf("Simplex Pivot:\n");
+        if(!simplexPivot(matrix_data, rows, cols, pivoted))
+            break;
+        for(int i=0; i<rows; ++i) {
+            printf("constraint: [");
+            for(int k=0; k<cols; ++k)
+                printf("%8.2f%s",matrix_data[k+i*cols],k==cols-1?"]\n":",");
+        }
+    }
+    printf("Solutions:\n");
+    for(int i=0; i<rows; ++i) {
+        if(pivoted[i] != -1) {
+            printf("x_%d = %f\n", i, matrix_data[cols-1+pivoted[i]*cols]);
+        }
+    }
+
     fflush(stdout);
     exit(1);
+}
+#endif
+
+//XXX todo make this function complete (include <= bounds)
+std::vector<std::vector<float>> LayoutProblem::recurseConstraint(int var_, float gain, bool *active, int *rw,
+        std::vector<float> constraint)
+{
+    std::vector<std::vector<float>> res;
+    res.push_back(constraint);
+    //printf("constraint: [");
+    //for(int k=0; k<constraint.size(); ++k)
+    //    printf("%f%s",constraint[k],k==constraint.size()-1?"]\n":",");
+    //printf("recurseConstraint(%d)...\n", var_);
+    auto &v = *var[var_-1];
+    assert(v.id == var_);
+    if(v.solved || v.is_fixed) {
+        return res;
+    }
+    //v.dump("asdf");
+    for(int j=0; j<v.c.size(); ++j) {
+        auto &c = *v.c[j];
+        if(c.type == CONSTRAINT_GE) 
+            continue;
+        for(int k=0; k<c.size(); ++k) {
+            std::vector<std::vector<float>> rc_next;
+            for(auto cur:res) {
+                //printf("adding'' <%d>(%d)\n", c.v[k]->id, rw[c.v[k]->id]);
+                if(active[c.v[k]->id] || c.v[k]->id == 0) {
+                    //printf("non-recursive\n");
+                    //c.dump("*non");
+                    //printf("old=%f\n", cur[rw[c.v[k]->id]]);
+                    //cur[rw[c.v[k]->id]] += c.scale[k];
+                    //printf("new=%f\n", cur[rw[c.v[k]->id]]);
+                    rc_next.push_back(cur);
+                } else {
+                    //printf("recurse again");
+                    //c.v[k]->dump("*rec ");
+                    auto res = recurseConstraint(c.v[k]->id, (float)c.scale[k],
+                            (bool*)active, (int*)rw, cur);
+                    for(auto x:res)
+                        rc_next.push_back(x);
+                }
+            }
+            res = rc_next;
+        }
+    }
+    //printf("returning %d constraints...\n", (int)res.size());
+    return res;
 }
 
 void LayoutProblem::passSolveTrivial()
@@ -858,8 +1457,8 @@ void LayoutProblem::passScalarVariableFixing()
         for(int j=0; j<var[i]->c.size(); ++j) {
             auto &cc = *var[i]->c[j];
             if(cc.isScalarEquality()) {
-                //printf("Trying to fix var %%%d to %%%d\n", var[i]->id,
-                //        cc.v[0]->id);
+                printf("Trying to fix var %%%d to %%%d\n", var[i]->id,
+                        cc.v[0]->id);
                 var[i]->is_fixed = true;
                 for(int j=0;j<(int)var.size(); ++j)
                     if(j!=i)
@@ -887,7 +1486,7 @@ void LayoutProblem::passTransferSolvedConstraints()
         int j=(int)var[i]->c.size()-1;
         while(j>=0) {
             auto &cc = *var[i]->c[j];
-            cc.dump("it");
+            //cc.dump("it");
             //printf("SOLVED THING<%d> [%d %d %d]\n", var[i]->id, cc.isScalarEquality(),  !cc.isConstOnly(), cc.type == CONSTRAINT_EQ);
             if(cc.isScalarEquality() && !cc.isConstOnly() && cc.type == CONSTRAINT_EQ) {
                 cc.v[0]->addConstraint(CONSTRAINT_EQ,
@@ -896,9 +1495,9 @@ void LayoutProblem::passTransferSolvedConstraints()
             } else if(cc.v.size() == 2 && cc.v[0]->id == 0 && cc.v[1]->id != 0 &&
                     cc.type == CONSTRAINT_LE && cc.scale[1] < 0)
             {
-                printf("Making a new Transfered Solution Constraint(%f)...\n",
-                        var[i]->solution);
-                cc.dump("OLD: ");
+                //printf("Making a new Transfered Solution Constraint(%f)...\n",
+                //        var[i]->solution);
+                //cc.dump("OLD: ");
                 cc.v[1]->addConstraint(CONSTRAINT_LE,
                         -(cc.scale[0]-var[i]->solution)/cc.scale[1], cc.v[0]);
                 cc.v[1]->c[cc.v[1]->c.size()-1]->dump("NEW: ");
@@ -906,9 +1505,9 @@ void LayoutProblem::passTransferSolvedConstraints()
 
             } else if(cc.v.size() == 2 && cc.v[0]->id == 0 && cc.v[1]->id != 0 &&
                     cc.type == CONSTRAINT_LE && cc.scale[1] >= 0) {
-                printf("Making a new Transfered Solution Constraint'(%f)...\n",
-                        var[i]->solution);
-                cc.dump("OLD: ");
+                //printf("Making a new Transfered Solution Constraint'(%f)...\n",
+                //        var[i]->solution);
+                //cc.dump("OLD: ");
                 cc.v[1]->addConstraint(CONSTRAINT_LE,
                         (cc.scale[0]-var[i]->solution)/cc.scale[1], cc.v[0]);
                 cc.v[1]->c[cc.v[1]->c.size()-1]->dump("NEW: ");
@@ -981,28 +1580,89 @@ void LayoutProblem::passNoNegativeUpper()
 void LayoutProblem::solve()
 {
     //Solve Trivial Variables
+    //for(int i=0;i<5;++i) {
+    //    passReduceWithSolved();
+    //    passScalarVariableFixing();
+    //    passTransferSolvedConstraints();
+    //    passReduceWithSolved();
+    //    passSolveTrivial();
+    //    passTighten();
+    //}
+    
     passSolveTrivial();
-
+    //passScalarVariableFixing();
     //Propigate Solutions
     passReduceWithSolved();
-    passInvertTrivialBounds();
-    passTransferSolvedConstraints();
-    passNoNegativeUpper();
-    printf("-------------------------------------------------\n");
-    printf("--------Uhhh Input-------------------------------\n");
-    printf("-------------------------------------------------\n");
-    dump();
-    for(int i=0; i<10; ++i)
-        passScalarVariableFixing();
+    //passInvertTrivialBounds();
+    //passTransferSolvedConstraints();
+    //passSolveTrivial();
+    //passTighten();
+    //passNoNegativeUpper();
+    //printf("-------------------------------------------------\n");
+    //printf("--------Uhhh Input-------------------------------\n");
+    //printf("-------------------------------------------------\n");
+    //dump();
+    //for(int i=0; i<10; ++i)
+    //    passScalarVariableFixing();
     //passScalarVariableFixing();
-    passSolveTrivial();
-    passDedup();
-    passTighten();
+    //passSolveTrivial();
+    //passDedup();
+    //passTighten();
 
     printf("-------------------------------------------------\n");
     printf("--------First Dep Solve Input--------------------\n");
     printf("-------------------------------------------------\n");
     dump();
+    passSimplex();
+    dump();
+    for(int i=0;i<5;++i) {
+        passReduceWithSolved();
+        passScalarVariableFixing();
+        passTransferSolvedConstraints();
+        passReduceWithSolved();
+        passSolveTrivial();
+        passTighten();
+    }
+    printf("-------------------------------------------------\n");
+    printf("--------Second Dep Solve Input-------------------\n");
+    printf("-------------------------------------------------\n");
+    dump();
+    passSimplex();
+    dump();
+    for(int i=0;i<5;++i) {
+        passReduceWithSolved();
+        passScalarVariableFixing();
+        passTransferSolvedConstraints();
+        passReduceWithSolved();
+        passSolveTrivial();
+        passTighten();
+    }
+    printf("-------------------------------------------------\n");
+    printf("--------Third Dep Solve Input--------------------\n");
+    printf("-------------------------------------------------\n");
+    dump();
+    passSimplex();
+    for(int i=0;i<5;++i) {
+        passReduceWithSolved();
+        passScalarVariableFixing();
+        passTransferSolvedConstraints();
+        passReduceWithSolved();
+        passSolveTrivial();
+        passTighten();
+    }
+    passSimplex();
+    for(int i=0;i<5;++i) {
+        passReduceWithSolved();
+        passScalarVariableFixing();
+        passTransferSolvedConstraints();
+        passReduceWithSolved();
+        passSolveTrivial();
+        passTighten();
+    }
+    dump();
+    fflush(stdout);
+    return;
+    //exit(1);
 
     depSolve();
 
@@ -1066,7 +1726,6 @@ void LayoutProblem::solve()
     printf("---------Fourth Dep Solve Input------------------\n");
     printf("-------------------------------------------------\n");
     dump();
-    passSimplex();
 
     depSolve();
     passSolveTrivial();
@@ -1112,26 +1771,18 @@ void LayoutProblem::check_solution()
 void LayoutProblem::dump()
 {
     printf("Layout Problem:\n");
-    printf("\tBoxes:     %d\n", box.size());
+    printf("\tBoxes:     %d\n", (int)box.size());
     for(int i=0; i<(int)box.size(); ++i) {
         box[i]->dump("\t");
     }
-    printf("\tVariables: %d\n", var.size());
+    printf("\tVariables: %d\n", (int)var.size());
     for(int i=0; i<(int)var.size(); ++i) {
-        if(var[i]->is_fixed)
-            continue;
+        //if(var[i]->is_fixed || var[i]->solved)
+        //    continue;
         var[i]->dump("\t");
     }
+    fflush(stdout);
 }
-
-
-
-
-
-
-
-
-
 
 
 

@@ -33,5 +33,9 @@ BBox &zButton::layoutSubProblems(LayoutProblem &prob, BBox &parent)
     bbox.clear();
     auto &var = *prob.getNamedVariable("textHeight", 200);
     var = bbox.h;
+    if(m_renderer == "default")
+        bbox.h = m_zaspect*bbox.w;
+    else
+        bbox.h = bbox.w;
     return bbox;
 }
