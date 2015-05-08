@@ -53,9 +53,11 @@ public slots:
 
         for(int i=0; i<m_rows; ++i) {
             rh[i].name = "row-height";
-            rh[i].priority = 500;
+            rh[i].priority = 300;
             rh[i] = height()/m_rows;
             prob.addVariable(rh+i);
+            if(i != 0)
+                continue;
             auto &cc = rh[i].addConstraint(CONSTRAINT_LE, 1, &self.h);
             for(int j=0; j<m_rows; ++j)
                 if(i!=j)
@@ -63,13 +65,15 @@ public slots:
         }
         for(int i=0; i<m_cols; ++i) {
             cw[i].name = "column-width";
-            cw[i].priority = 500;
-            cw[i] = width()/m_cols;
+            cw[i].priority = 300;
             prob.addVariable(cw+i);
-            auto &cc = cw[i].addConstraint(CONSTRAINT_LE, 1, &self.w);
-            for(int j=0; j<m_cols; ++j)
-                if(i!=j)
-                    cc.addVar(-1.0, cw[j]);
+            //if(i == 0) {
+                cw[i] = width()/m_cols;
+            //}
+            //auto &cc = cw[i].addConstraint(CONSTRAINT_LE, 1, &self.w);
+            //for(int j=0; j<m_cols; ++j)
+            //    if(i!=j)
+            //        cc.addVar(-1.0, cw[j]);
         }
     
         for(int i=0; i<m_rows*m_cols; ++i)
@@ -118,6 +122,10 @@ public slots:
         prob.dump();
 
         prob.solve();
+        float badness = 0;
+        for(int i=0; i<m_rows*m_cols; ++i)
+            badness += padh[i].solution + padw[i].solution;
+        printf("Total Badness = %f\n", badness);
 
         int j=0;
         for(int i=0; i<childItems().size(); ++i)

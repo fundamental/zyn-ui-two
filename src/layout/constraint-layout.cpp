@@ -1,6 +1,6 @@
 #include "constraint-layout.h"
 
-//#define QUIET_DOWN
+#define QUIET_DOWN
 #ifdef  QUIET_DOWN
 #define printf(...)
 #endif
@@ -1000,6 +1000,8 @@ bool simplexPivot(float *data, int rows, int cols, int *pivoted)
     return true;
 }
 
+#include "lp-solve.cpp"
+
 void LayoutProblem::passSimplex()
 {
     printf("Simplex Pass\n");
@@ -1089,6 +1091,8 @@ void LayoutProblem::passSimplex()
             constraints.push_back(rc);
         }
     }
+    if(constraints.size()==0)
+        return;
     //Build Always True Constraint
     if(0){
         std::vector<float> rc;
@@ -1102,6 +1106,54 @@ void LayoutProblem::passSimplex()
     }
 
 
+    //Construct The Simplex Table
+    int   rows = constraints.size()+2;
+    int   cols = slack_vars+L+1;
+    Matrix simplexTable(rows, cols);
+    int slacky = 0;
+    for(int i=0; i<rows-2; ++i) {
+        if(has_slack[i])
+            simplexTable(i, L+(slacky++)) = 1;
+        //assert(constraints[i][0]>=-0.1);
+        simplexTable(i,cols-1) = constraints[i][0];
+        for(int j=0; j<L; ++j)
+            simplexTable(i,j) = constraints[i][j+1];
+    }
+    for(int i=0; i<N; ++i) {
+        int j = var[i]->id;
+        if(var[i]->priority == priority && !var[i]->is_fixed) {
+            printf("rewrite[%d]=%d\n", j, rewrite[j]);
+            assert(rewrite[j]>0);
+            simplexTable(rows-2,rewrite[j]-1) = -1;
+        }
+    }
+
+
+    //Matrix test(5,7);
+    //float test_data[] = {2,5,3,-1,0,0,185,3,2.5,8,0,-1,0,155,8,10,4,0,0,-1,600,4,8,3,0,0,0};
+    //for(int i=0;i<sizeof(test_data)/4;++i)
+    //    test.data[i] = test_data[i];
+    //rows = test.rows;
+    //cols = test.cols;
+    for(int i=0; i<cols; ++i)
+        for(int j=0; j<rows-2; ++j)
+            simplexTable(rows-1,i) -= simplexTable(j,i);
+
+    printf("LP Input...\n");
+    simplexTable.dump();
+    LpResults sol = linear_program(simplexTable);
+    assert(sol.is_solved);
+    for(int i=0; i<N; ++i) {
+        int j=var[i]->id;
+        if(rewrite[j]>0 && var[i]->priority == priority && !var[i]->is_fixed && !var[i]->solved) {
+            printf("%%%d->%d->%f\n", j, rewrite[j]-1, sol.solution(rewrite[j]-1,0));
+            var[i]->solve(sol.solution(rewrite[j]-1,0));
+        }
+    }
+    //exit(1);
+
+
+#if 0
     for(int i=0; i<constraints.size(); ++i) {
         auto &c=constraints[i];
         float first_one=0;
@@ -1217,6 +1269,7 @@ void LayoutProblem::passSimplex()
             printf("%%%d = %f\n", var[i]->id, val);
         }
     }
+#endif
 
 }
 
