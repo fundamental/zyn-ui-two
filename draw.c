@@ -881,7 +881,7 @@ void drawKeyboard(NVGcontext *vg, int x, int y, int w, int h)
 
     //draw the black keys at the joints
     for(int i=0; i<white_keys; ++i) {
-        if(!black_pattern[i%8])
+        if(!black_pattern[i%7])
             continue;
         float box[4] = {(float)x+(i+0.5f)*w*1.0f/(white_keys-1),
             (float)y, w*1.0f/(white_keys), (float)h*0.7f};
