@@ -24,6 +24,9 @@ public slots:
         if(width() == 0 || height() == 0)
             return;
 
+        struct timespec ts;
+        clock_gettime(CLOCK_REALTIME, &ts);
+        float start = (ts.tv_sec + (ts.tv_nsec / 1e+09));
         LayoutProblem prob;
         BBox self;
         self.x = 0;
@@ -122,6 +125,12 @@ public slots:
         prob.dump();
 
         prob.solve();
+        clock_gettime(CLOCK_REALTIME, &ts);
+        float end = (ts.tv_sec + (ts.tv_nsec / 1e+09));
+
+        printf("Layout Time %f ms\n", 1000*(end-start));
+
+
         float badness = 0;
         for(int i=0; i<m_rows*m_cols; ++i)
             badness += padh[i].solution + padw[i].solution;

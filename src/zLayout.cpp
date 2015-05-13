@@ -31,6 +31,10 @@ void zLayout::doLayout()
     BBox    **ch = new BBox*[getLayoutChildren()];
     if(layoutH() == 0 || width() == 0)
         return;
+    
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    float start = (ts.tv_sec + (ts.tv_nsec / 1e+09));
 
     rh->name = "row-height";
     *rh = 100;
@@ -70,14 +74,27 @@ void zLayout::doLayout()
             ch[j] = new BBox;
         if(!expandable)
             *sv = scale*ch[j]->w;
-        if(j == 0) {
-            ch[j]->x = 0;
+        if(m_vertical) {
+            if(j == 0) {
+                ch[j]->y = 0;
+            } else {
+                ch[j]->y = ch[j-1]->y + ch[j-1]->h;
+            }
         } else {
-            ch[j]->x = ch[j-1]->x + ch[j-1]->w;
+            if(j == 0) {
+                ch[j]->x = 0;
+            } else {
+                ch[j]->x = ch[j-1]->x + ch[j-1]->w;
+            }
         }
         ch[j]->parent = &self;
-        ch[j]->y = 0.5*ph[j];
-        ch[j]->h <= self.h-ph[j];
+        if(m_vertical) {
+            ch[j]->x = 0.5*ph[j];
+            ch[j]->w <= self.w-ph[j];
+        } else {
+            ch[j]->y = 0.5*ph[j];
+            ch[j]->h <= self.h-ph[j];
+        }
         ph[j].name = "pad-height";
         ph[j].priority = 120;
         prob.addBox(*ch[j]);
@@ -114,4 +131,7 @@ void zLayout::doLayout()
         //}
         j++;
     }
+    float end = (ts.tv_sec + (ts.tv_nsec / 1e+09));
+
+    printf("Layout Time %f ms\n", 1000*(end-start));
 }

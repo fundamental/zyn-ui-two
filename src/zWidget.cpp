@@ -47,10 +47,17 @@ void zWidget::handleSync()
     //        parentItem()-window()->contentItem());
     if(parentItem() == window()->contentItem())  {
         //only redraw damaged area when possible
+        struct timespec ts;
+        clock_gettime(CLOCK_REALTIME, &ts);
+        double start = (ts.tv_sec + (ts.tv_nsec / 1e+09));
         if(m_damage.isValid() && !m_damage.isEmpty()) {
             abstractPaint(m_damage);
         } else
             abstractPaint(QRectF(0,0,-1,-1));
+        clock_gettime(CLOCK_REALTIME, &ts);
+        double end = (ts.tv_sec + (ts.tv_nsec / 1e+09));
+
+        printf("Draw Time %f ms\n", 1000*(end-start));
         m_damage = QRectF(0,0,0,0);
     }
 }
@@ -86,9 +93,9 @@ void zWidget::abstractPaint(QRectF damage)
 
     glViewport(pos.x(), yy, width(), height());
 
-    printf("draw %ld: '%s'{%s}(%f,%f,%f,%f)\n", drawCount,
-            metaObject()->className(), m_label.toLatin1().data(),
-            pos.x(),yy,width(),height());
+    //printf("draw %ld: '%s'{%s}(%f,%f,%f,%f)\n", drawCount,
+    //        metaObject()->className(), m_label.toLatin1().data(),
+    //        pos.x(),yy,width(),height());
     NVGcontext *vg = (NVGcontext*)initVG();
     glViewport(pos.x(), yy, width(), height());
     nvgBeginFrame(vg, width(), height(), 1.0);

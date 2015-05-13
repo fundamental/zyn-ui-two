@@ -500,7 +500,7 @@ void Variable::reduceWithSolved(Variable *var)
                 cc.scale[j] *= replace;
             }
         }
-        cc.dedup();
+        //cc.dedup();
     }
 }
 
