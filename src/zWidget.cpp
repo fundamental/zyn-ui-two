@@ -23,8 +23,8 @@ zWidget::zWidget(QQuickItem *parent)
             this, SLOT(abstractDamageLayout()));
     connect(this, SIGNAL(widthChanged()),
             this, SLOT(abstractDamageLayout()));
-    connect(this, SIGNAL(childrenChanged()),
-            this, SLOT(abstractDamageLayout()));
+    //connect(this, SIGNAL(childrenChanged()),
+    //        this, SLOT(abstractDamageLayout()));
 }
 
 void zWidget::handleWindowChanged(QQuickWindow *win)
