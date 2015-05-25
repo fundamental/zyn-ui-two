@@ -18,7 +18,10 @@
         <file>qml/KitRow.qml</file>
         <file>qml/Knob.qml</file>
         <file>qml/LfoView.qml</file>
+        <file>qml/ModWheel.qml</file>
+        <file>qml/MainFooter.qml</file>
         <file>qml/MainSidebar.qml</file>
+        <file>qml/MainWindow.qml</file>
         <file>qml/Mixer.qml</file>
         <file>qml/MixerElement.qml</file>
         <file>qml/Module.qml</file>

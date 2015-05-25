@@ -17,23 +17,6 @@ Background {
             MainSidebar {}
             AdVoice {}
         }
-        ZLayout {
-            ModWheel {}
-            Keyboard {
-                property variant aspect: 1.0/15.5
-                property variant zscale: 1
-            }
-            Knob {label: "velocity"}
-            Knob {label: "vrand"}
-            Knob {label: "octave"}
-            Knob {label: "qwer"}
-            Knob {label: "zxcv"}
-            Knob {label: "c.val"}
-            DropDown {
-                label: "controller"
-                text: "74: filter frequency"
-            }
-
-        }
+        MainFooter {}
     }
 }
