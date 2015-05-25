@@ -35,7 +35,7 @@ Background {
                     n: 8
                     label: "voices"
                 }
-                Button {label: "subsynth";renderer: "relaxed";aspect: 0.3; zscale:  0.3}
+                Button {label: "subsynth";renderer: "relaxed";zscale:  0.3}
                 Button {label: "padsynth";renderer: "relaxed";aspect: 0.3; zscale:  0.3}
             }
             AdVoice {}

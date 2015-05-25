@@ -5,9 +5,9 @@ ZGrid {
     rows: 2
     cols: 3
     DropDown { text: "file" }
-    Button {}
+    Button {renderer: "icon-keyboard"}
     Button {label: "midi learn"}
-    HLayout {
+    ZLayout {
         Button {renderer: "icon-record"}
         Button {renderer: "icon-pause"}
     }
