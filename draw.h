@@ -39,6 +39,7 @@ void drawPanicButton(NVGcontext *vg, int x, int y, int w, int h);
 void drawStopButton(NVGcontext *vg, int x, int y, int w, int h);
 void drawPauseButton(NVGcontext *vg, int x, int y, int w, int h);
 void drawRecButton(NVGcontext *vg, int x, int y, int w, int h);
+void drawKeyButton(NVGcontext *vg, int x, int y, int w, int h);
 void drawToggleBox(NVGcontext *vg, const char *str, int x, int y, int w, int h);
 void drawModuleBox(NVGcontext *vg, const char *str, int x, int y, int w, int h);
 void drawKeyboard(NVGcontext *vg, int x, int y, int w, int h);

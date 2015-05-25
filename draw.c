@@ -797,6 +797,39 @@ void drawRecButton(NVGcontext *vg, int x, int y, int w, int h)
     nvgCircle(vg, bb[0]+bb[2]/2, bb[1]+bb[3]/2,bb[2]/2);
     nvgFill(vg);
 }
+void drawKeyButton(NVGcontext *vg, int x, int y, int w, int h)
+{
+    drawBox(vg, x, y, w, h);
+    float bb[4] = {(float)x, (float)y, (float)w, (float)h};
+    square(pad(0.5, bb));
+    //nvgFillColor(vg, nvgRGBA(0x00,0xcf,0xf7,255));
+    const int white_keys = 3;
+    const int black_pattern[] = {1,1,0};
+
+    //draw the white keys
+    for(int i=0; i<white_keys; ++i) {
+        float box[4] = {(float)bb[0]+i*bb[2]*1.0f/(white_keys-1),
+            (float)bb[1], bb[2]*1.0f/(white_keys), (float)bb[3]};
+        pad(0.9, box);
+        nvgBeginPath(vg);
+        nvgRect(vg, SPLAT(box));
+        nvgFillColor(vg, nvgRGBA(0xaa, 0xaa, 0xaa, 255));
+        nvgFill(vg);
+    }
+
+    //draw the black keys at the joints
+    for(int i=0; i<white_keys; ++i) {
+        if(!black_pattern[i])
+            continue;
+        float box[4] = {(float)bb[0]+(i+0.5f)*bb[2]*1.0f/(white_keys-1),
+            (float)bb[1], bb[2]*1.0f/(white_keys), (float)bb[3]*0.7f};
+        pad(0.9, box);
+        nvgBeginPath(vg);
+        nvgRect(vg, SPLAT(box));
+        nvgFillColor(vg, nvgRGBA(0x0C, 0x0C, 0x0C, 255));
+        nvgFill(vg);
+    }
+}
 //------------------------------------------------------------------------------
 void drawToggleBox(NVGcontext *vg, const char *str, int x, int y, int w, int h)
 {

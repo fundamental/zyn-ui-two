@@ -9,9 +9,10 @@ void zButton::paint(NVGcontext *vg)
     if(m_renderer == "default") {
         drawButton(vg, getLabel().c_str(), 0, 0, width(), height());
         m_zaspect = textAspect(vg, getLabel().c_str());
-    } else if(m_renderer == "relaxed")
+    } else if(m_renderer == "relaxed") {
         drawRelaxedButton(vg, getLabel().c_str(), 0, 0, width(), height());
-    else if(m_renderer == "icon-stop")
+        m_zaspect = textAspect(vg, getLabel().c_str());
+    } else if(m_renderer == "icon-stop")
         drawStopButton(vg, 0, 0, width(), height());
     else if(m_renderer == "icon-pause")
         drawPauseButton(vg, 0, 0, width(), height());
@@ -21,6 +22,8 @@ void zButton::paint(NVGcontext *vg)
         drawPanicButton(vg, 0, 0, width(), height());
     else if(m_renderer == "icon-power")
         drawPowerButton(vg, 0, 0, width(), height());
+    else if(m_renderer == "icon-keyboard")
+        drawKeyButton(vg, 0, 0, width(), height());
 }
 
 void zButton::setAutoAspect(bool)
