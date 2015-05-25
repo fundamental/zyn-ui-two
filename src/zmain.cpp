@@ -35,6 +35,7 @@
 #include "zLogo.h"
 #include "zBackground.h"
 #include "zDummy.h"
+#include "zStatusPane.h"
 
 
 NVGcontext *initVG()
@@ -87,6 +88,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<zGrid>("ZynAddSubFX", 1, 0, "ZGrid");
     qmlRegisterType<zLogo>("ZynAddSubFX", 1, 0, "Logo");
     qmlRegisterType<zBackground>("ZynAddSubFX", 1, 0, "Background");
+    qmlRegisterType<zStatusPane>("ZynAddSubFX", 1, 0, "StatusPane");
 
     //Unimplemented
     qmlRegisterType<zDummy>("ZynAddSubFX", 1, 0, "Div");

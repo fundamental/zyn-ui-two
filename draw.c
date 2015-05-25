@@ -88,6 +88,27 @@ void drawLabel(NVGcontext *vg, const char *str, int x, int y, int w, int h)
 }
 
 //------------------------------------------------------------------------------
+void drawRightLabel(NVGcontext *vg, const char *str, int x, int y, int w, int h)
+{
+
+    nvgFontSize(vg, h*1.0);
+    nvgFontFace(vg, "sans");
+    //nvgFillColor(vg, nvgRGBA(0x22, 0x9b, 0xdb, 128));
+    nvgFillColor(vg, nvgRGBA(0x32, 0xb7, 0xdd, 255));
+
+    nvgTextAlign(vg,NVG_ALIGN_LEFT|NVG_ALIGN_MIDDLE);
+
+    float bounds[4];
+    nvgTextBounds(vg, x,y, str, NULL, bounds);
+    if((bounds[2]-bounds[0]) > w) { //horizontally constrained case
+        nvgFontSize(vg, h*w*1.0/(bounds[2]-bounds[0]));
+        nvgTextBounds(vg, x,y, str, NULL, bounds);
+    }
+
+
+    nvgText(vg, x+w-bounds[2],y+h*0.5f,str, NULL);
+}
+//------------------------------------------------------------------------------
 void drawLeftLabel(NVGcontext *vg, const char *str, int x, int y, int w, int h)
 {
 

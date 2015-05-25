@@ -13,6 +13,7 @@ extern "C" {
 
 void drawDial(NVGcontext *vg, int x, int y, int w, int h);
 void drawLabel(NVGcontext *vg, const char *str, int x, int y, int w, int h);
+void drawRightLabel(NVGcontext *vg, const char *str, int x, int y, int w, int h);
 void drawLeftLabel(NVGcontext *vg, const char *str, int x, int y, int w, int h);
 void drawDialValue(NVGcontext *vg, int val, int x, int y, int w, int h);
 void drawBox(NVGcontext *vg, int x, int y, int w, int h);
