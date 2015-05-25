@@ -61,6 +61,7 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     qmlRegisterType<zKnob>("ZynAddSubFX", 1, 0, "Knob");
+    qmlRegisterType<zKnob>("ZynAddSubFX", 1, 0, "AltKnob");
     qmlRegisterType<zGraph>("ZynAddSubFX", 1, 0, "Graph");
     qmlRegisterType<zButton>("ZynAddSubFX", 1, 0, "Button");
     qmlRegisterType<zEnvView>("ZynAddSubFX", 1, 0, "EnvView");

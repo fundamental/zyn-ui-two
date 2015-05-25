@@ -27,6 +27,7 @@ public slots:
     virtual BBox &layoutSubProblems(LayoutProblem &prob, BBox &parent);
     virtual void abstractDamageLayout(){damageLayout();};
     virtual void damageLayout(){};
+    virtual void    mousePressEvent(QMouseEvent * event) {printf("Mouse Global Event...\n");}
 protected:
     qreal m_zscale, m_zaspect;
     QString m_label;

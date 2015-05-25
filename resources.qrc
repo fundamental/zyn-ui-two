@@ -2,7 +2,6 @@
 <RCC version="1.0">
     <qresource prefix="/">
         <file>qml/AdVoice.qml</file>
-        <file>qml/AltKnob.qml</file>
         <file>qml/AmpView.qml</file>
         <file>qml/Button.qml</file>
         <file>qml/DropDown.qml</file>
@@ -16,7 +15,6 @@
         <file>qml/HSlider.qml</file>
         <file>qml/Kit.qml</file>
         <file>qml/KitRow.qml</file>
-        <file>qml/Knob.qml</file>
         <file>qml/LfoView.qml</file>
         <file>qml/ModWheel.qml</file>
         <file>qml/MainFooter.qml</file>
