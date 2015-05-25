@@ -16,6 +16,7 @@ Module {
         label: "type"
     }
     Button {
+        zscale: 0.5
         label: "c."
     }
 }

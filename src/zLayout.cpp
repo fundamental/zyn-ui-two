@@ -22,7 +22,7 @@ void zLayout::doLayout()
     BBox *leak = new BBox;
     BBox &self = *leak;
     self.x = 0;
-    self.y = layoutY();
+    self.y = 0;
     self.w = width();
     self.h = layoutH();
     Variable *rh = new Variable();
@@ -73,7 +73,7 @@ void zLayout::doLayout()
         else
             ch[j] = new BBox;
         if(!expandable && !m_vertical)
-            *sv = scale*ch[j]->w;
+            *sv = ch[j]->h/scale;
         else if(m_vertical)
             *sv = ch[j]->h/scale;
         if(m_vertical) {
@@ -122,6 +122,7 @@ void zLayout::doLayout()
         if(QString("zImplicitLabel") == obj->metaObject()->className())
             continue;
         BBox *box = ch[j];
+        box->y.solve(box->y.solution+layoutY());
         setBounds(*obj, *box);
         //if(labelBoxes.contains(obj) && labelBoxes[obj]) {
         //    obj = labelBoxes[obj];

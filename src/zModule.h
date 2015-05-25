@@ -15,8 +15,8 @@ public:
 public slots:
     void updateImplicit();
 protected:
-    float layoutY() const {return 0.2f*height();};
-    float layoutH() const {return height()*0.8f;};
+    float layoutY() const override {return 0.2f*height();};
+    float layoutH() const override {return height()*0.8f;};
 private:
     bool m_editable;
     bool m_copyable;
