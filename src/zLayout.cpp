@@ -72,8 +72,10 @@ void zLayout::doLayout()
             ch[j] = &obj_->layoutSubProblems(prob, self);
         else
             ch[j] = new BBox;
-        if(!expandable)
+        if(!expandable && !m_vertical)
             *sv = scale*ch[j]->w;
+        else if(m_vertical)
+            *sv = ch[j]->h/scale;
         if(m_vertical) {
             if(j == 0) {
                 ch[j]->y = 0;

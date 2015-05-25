@@ -50,6 +50,7 @@ class LinearConstraint
 LinearConstraint operator-(LinearConstraint, LinearConstraint);
 LinearConstraint operator+(LinearConstraint, LinearConstraint);
 LinearConstraint operator*(LinearConstraint, LinearConstraint);
+LinearConstraint operator/(LinearConstraint, LinearConstraint);
 
 class Variable
 {

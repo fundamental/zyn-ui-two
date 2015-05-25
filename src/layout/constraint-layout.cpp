@@ -205,6 +205,16 @@ LinearConstraint operator*(LinearConstraint self, LinearConstraint l)
     return self;
 }
 
+LinearConstraint operator/(LinearConstraint self, LinearConstraint l)
+{
+    assert(self.v.size() == 1);
+    assert(self.s.size() == 0);
+    assert(l.v.size() == 0);
+    assert(l.s.size() == 1);
+    self.s.push_back(1.0/l.s[0]);
+    return self;
+}
+
 
 /******************************************************************
  *                   Variable                                     *
@@ -385,7 +395,7 @@ bool Variable::hasScalarEquality()
 
 void Variable::inverseRewrite(float scale, Variable *var, int ref)
 {
-    printf("inverse rewrite(%d,%d)\n",priority, var->priority);
+    //printf("inverse rewrite(%d,%d)\n",priority, var->priority);
     if(priority < var->priority)
         priority = var->priority;
     for(int i=var->c.size()-1; i>=0; --i) {
@@ -1037,9 +1047,9 @@ void LayoutProblem::passSimplex()
             if(!var[i]->is_fixed && !var[i]->solved && var[i]->id != 0)
                 id++;
         }
-        printf("Variables = %d+1\n", L);
-        for(int i=0;i<N+1;++i)
-            printf("rewrite[%d] = %d<%d>\n", i, rewrite[i], i==0?-1:activeVariable[i-1]);
+        //printf("Variables = %d+1\n", L);
+        //for(int i=0;i<N+1;++i)
+        //    printf("rewrite[%d] = %d<%d>\n", i, rewrite[i], i==0?-1:activeVariable[i-1]);
     }
 
 
@@ -1122,7 +1132,7 @@ void LayoutProblem::passSimplex()
     for(int i=0; i<N; ++i) {
         int j = var[i]->id;
         if(var[i]->priority == priority && !var[i]->is_fixed) {
-            printf("rewrite[%d]=%d\n", j, rewrite[j]);
+            //printf("rewrite[%d]=%d\n", j, rewrite[j]);
             assert(rewrite[j]>0);
             simplexTable(rows-2,rewrite[j]-1) = -1;
         }
@@ -1140,13 +1150,13 @@ void LayoutProblem::passSimplex()
             simplexTable(rows-1,i) -= simplexTable(j,i);
 
     printf("LP Input...\n");
-    simplexTable.dump();
+    //simplexTable.dump();
     LpResults sol = linear_program(simplexTable);
     assert(sol.is_solved);
     for(int i=0; i<N; ++i) {
         int j=var[i]->id;
         if(rewrite[j]>0 && var[i]->priority == priority && !var[i]->is_fixed && !var[i]->solved) {
-            printf("%%%d->%d->%f\n", j, rewrite[j]-1, sol.solution(rewrite[j]-1,0));
+            //printf("%%%d->%d->%f\n", j, rewrite[j]-1, sol.solution(rewrite[j]-1,0));
             var[i]->solve(sol.solution(rewrite[j]-1,0));
         }
     }
@@ -1830,8 +1840,8 @@ void LayoutProblem::dump()
     }
     printf("\tVariables: %d\n", (int)var.size());
     for(int i=0; i<(int)var.size(); ++i) {
-        //if(var[i]->is_fixed || var[i]->solved)
-        //    continue;
+        if(var[i]->is_fixed || var[i]->solved)
+            continue;
         var[i]->dump("\t");
     }
     fflush(stdout);

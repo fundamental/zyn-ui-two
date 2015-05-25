@@ -14,30 +14,7 @@ Background {
         }
         HLayout {
             weights: [0.1,0.9]
-            ZLayout {
-                vertical: true
-                Button {
-                    label: "part settings"
-                    renderer: "relaxed"
-                    aspect: 0.3
-                    zscale:  0.3
-                }
-                SelectorGrid { n: 16}
-                    
-                Button {label: "browser";renderer: "relaxed";aspect: 0.3; zscale:  0.3}
-                Button {label: "mixer";renderer: "relaxed";aspect: 0.3; zscale:  0.3}
-                Button {label: "kit editor";renderer: "relaxed";aspect: 0.3; zscale:  0.3}
-                SelectorGrid { n: 16 }
-                Button {label: "arp";renderer: "relaxed";aspect: 0.3; zscale:  0.3}
-                Button {label: "effects";renderer: "relaxed";aspect: 0.3; zscale:  0.3}
-                Button {label: "adsynth";renderer: "relaxed";aspect: 0.3; zscale:  0.3}
-                SelectorGrid {
-                    n: 8
-                    label: "voices"
-                }
-                Button {label: "subsynth";renderer: "relaxed";zscale:  0.3}
-                Button {label: "padsynth";renderer: "relaxed";aspect: 0.3; zscale:  0.3}
-            }
+            MainSidebar {}
             AdVoice {}
         }
         ZLayout {
