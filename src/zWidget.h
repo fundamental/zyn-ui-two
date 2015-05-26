@@ -25,6 +25,7 @@ public slots:
     void handleWindowChanged(QQuickWindow *win);
     void handleSync();
     virtual BBox &layoutSubProblems(LayoutProblem &prob, BBox &parent);
+    virtual void layoutSolved(LayoutProblem &prob) {};
     virtual void abstractDamageLayout(){damageLayout();};
     virtual void damageLayout(){};
     virtual void    mousePressEvent(QMouseEvent * event) {printf("Mouse Global Event...\n");}

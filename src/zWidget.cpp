@@ -92,12 +92,16 @@ void zWidget::handleSync()
         double start = (ts.tv_sec + (ts.tv_nsec / 1e+09));
         if(m_damage.isValid() && !m_damage.isEmpty()) {
             abstractPaint(m_damage);
-        } else
+        } else {
+            glViewport(0, 0, width(), height());
+            glClearColor(0, 0, 0, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
             abstractPaint(QRectF(0,0,-1,-1));
+        }
         clock_gettime(CLOCK_REALTIME, &ts);
         double end = (ts.tv_sec + (ts.tv_nsec / 1e+09));
 
-        printf("Draw Time %f ms\n", 1000*(end-start));
+        printf("Draw Time %f ms<%p>\n", 1000*(end-start), this);
         m_damage = QRectF(0,0,0,0);
 
         if(!first_sync && first_good_sync) {

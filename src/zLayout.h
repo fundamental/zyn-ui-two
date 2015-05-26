@@ -11,12 +11,18 @@ class zLayout:public zWidget
     Q_PROPERTY(bool vertical MEMBER m_vertical);
 public:
     zLayout()
-        :m_vertical(false)
+        :m_vertical(false), m_damaged_layout(false), m_ch(nullptr)
     {}
 public slots:
-    void damageLayout() {doLayout();}
+    void damageLayout() {m_damaged_layout = true;}
     void doLayout();
-    virtual void paint(NVGcontext *vg){};
+    BBox &layoutSubProblems(LayoutProblem &prob, BBox &parent) override;
+    void layoutSolved(LayoutProblem &prob) override;
+    virtual void paint(NVGcontext *vg){
+        if(m_damaged_layout)
+            doLayout();
+        m_damaged_layout = false;
+    };
 protected:
     virtual float layoutY() const {return 0.0f;};
     virtual float layoutH() const {return height();};
@@ -24,4 +30,6 @@ protected:
     QList<QQuickItem*> implicitChildren;
     QMap<QQuickItem *, class zImplicitLabel *> labelBoxes;
     bool m_vertical;
+    bool m_damaged_layout;
+    BBox **m_ch;
 };

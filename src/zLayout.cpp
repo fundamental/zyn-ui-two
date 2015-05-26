@@ -15,26 +15,26 @@ int zLayout::getLayoutChildren()
     return j;
 }
 
-void zLayout::doLayout()
+BBox &zLayout::layoutSubProblems(LayoutProblem &prob, BBox &parent)
 {
-    //Assume m_vertical = false for now
-    LayoutProblem prob;
-    BBox *leak = new BBox;
-    BBox &self = *leak;
-    self.x = 0;
-    self.y = 0;
-    self.w = width();
-    self.h = layoutH();
+    BBox &self  = bbox;
+    if(&parent == &self)
+        self.parent = 0;
+    else {
+        self.clear();
+        self.parent = &parent;
+    }
+
     Variable *rh = new Variable();
     Variable *sv = new Variable();
     Variable *ph = new Variable[getLayoutChildren()];
     BBox    **ch = new BBox*[getLayoutChildren()];
-    if(layoutH() == 0 || width() == 0)
-        return;
-    
-    struct timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
-    float start = (ts.tv_sec + (ts.tv_nsec / 1e+09));
+    m_ch = ch;
+    if(layoutH() == 0 || width() == 0) {
+        printf("Impossible Layout...\n");
+        return self;
+    }
+    m_damaged_layout = false;
 
     rh->name = "row-height";
     *rh = 100;
@@ -109,11 +109,15 @@ void zLayout::doLayout()
         //}
         j++;
     }
-    prob.addBoxVars();
-    prob.dump();
-    prob.solve();
 
-    j=0;
+    return bbox;
+}
+
+void zLayout::layoutSolved(LayoutProblem &prob)
+{
+    //printf("LayoutSolved(%p)\n", this);
+
+    int j=0;
     for(int i=0; i<childItems().size(); ++i)
     {
         QQuickItem *obj = dynamic_cast<QQuickItem*>(childItems()[i]);
@@ -121,20 +125,47 @@ void zLayout::doLayout()
             continue;
         if(QString("zImplicitLabel") == obj->metaObject()->className())
             continue;
-        BBox *box = ch[j];
+        BBox *box = m_ch[j];
+        if(!box->y.solved) {
+            //XXX weird bug
+            printf("----Weird Bug\n");
+            return;
+        }
+        assert(box->y.solved);
         box->y.solve(box->y.solution+layoutY());
+        //printf("Setting <%s>(%f,%f,%f,%f)\n", obj->metaObject()->className(),
+        //        box->x.solution, box->y.solution, box->w.solution, box->h.solution);
         setBounds(*obj, *box);
-        //if(labelBoxes.contains(obj) && labelBoxes[obj]) {
-        //    obj = labelBoxes[obj];
-        //    layoutGetLabel(layout, j-1, pos);
-        //    obj->setX(pos[0]);
-        //    obj->setY(pos[1]);
-        //    obj->setWidth(pos[2]);
-        //    obj->setHeight(pos[3]);
-        //}
+        if(auto *obj_=dynamic_cast<zWidget*>(obj)) {
+            obj_->layoutSolved(prob);
+        }
         j++;
     }
+}
+
+void zLayout::doLayout()
+{
+    //Assume m_vertical = false for now
+    LayoutProblem prob;
+    //BBox *leak = new BBox;
+    BBox &self = bbox;
+    self.clear();
+    self.x = 0;
+    self.y = 0;
+    self.w = width();
+    self.h = layoutH();
+
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    float start = (ts.tv_sec + (ts.tv_nsec / 1e+09));
+
+    layoutSubProblems(prob, self);
+    prob.addBoxVars();
+    prob.dump();
+    prob.solve();
+
+    layoutSolved(prob);
     float end = (ts.tv_sec + (ts.tv_nsec / 1e+09));
 
-    printf("Layout Time %f ms\n", 1000*(end-start));
+    printf("Layout Time %f ms<%p>\n", 1000*(end-start), this);
 }
