@@ -1,5 +1,7 @@
 #include "zWidget.h"
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "../nanovg/stb_image_write.h"
 #include "../nanovg/nanovg.h"
 
 #include <QtQuick/qquickwindow.h>
@@ -7,6 +9,42 @@
 #include <QtGui/QOpenGLContext>
 
 NVGcontext *initVG();
+
+static void setAlpha(unsigned char* image, int w, int h, int stride, unsigned char a)
+{
+    int x, y;
+    for (y = 0; y < h; y++) {
+        unsigned char* row = &image[y*stride];
+        for (x = 0; x < w; x++)
+            row[x*4+3] = a;
+    }
+}
+static void flipHorizontal(unsigned char* image, int w, int h, int stride)
+{
+    int i = 0, j = h-1, k;
+    while (i < j) {
+        unsigned char* ri = &image[i * stride];
+        unsigned char* rj = &image[j * stride];
+        for (k = 0; k < w*4; k++) {
+            unsigned char t = ri[k];
+            ri[k] = rj[k];
+            rj[k] = t;
+        }
+        i++;
+        j--;
+    }
+}
+void saveScreenShot(int w, int h)
+{
+    unsigned char* image = (unsigned char*)malloc(w*h*4);
+    if (image == NULL)
+        return;
+    glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, image);
+    setAlpha(image, w, h, w*4, 255);
+    flipHorizontal(image, w, h, w*4);
+    stbi_write_png("zion-debug-status.png", w, h, 4, image, w*4);
+    free(image);
+}
 
 zWidget::zWidget(QQuickItem *parent)
     :QQuickItem(parent), m_zscale(1.0), m_zaspect(1.0),
@@ -38,7 +76,9 @@ void zWidget::handleWindowChanged(QQuickWindow *win)
 
 void zWidget::handleSync()
 {
-    static long syncCount = 0;
+    static bool first_sync = true;
+    static bool first_good_sync = true;
+    static long syncCount  = 0;
     syncCount++;
     //printf("handleSync %ld: '%s'{%s}(%s)\n", syncCount,
     //        metaObject()->className(), m_label.toLatin1().data(),
@@ -59,6 +99,12 @@ void zWidget::handleSync()
 
         printf("Draw Time %f ms\n", 1000*(end-start));
         m_damage = QRectF(0,0,0,0);
+
+        if(!first_sync && first_good_sync) {
+            first_good_sync = false;
+            saveScreenShot(width(), height());
+        }
+        first_sync = false;
     }
 }
 

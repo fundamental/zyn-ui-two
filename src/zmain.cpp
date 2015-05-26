@@ -104,8 +104,8 @@ int main(int argc, char *argv[])
 
 
     QQuickView view;
-    view.setWidth(1320);
-    view.setHeight(285);
+    view.setWidth(1181);
+    view.setHeight(670);
     view.setResizeMode(QQuickView::SizeRootObjectToView);
     view.setSource(QUrl(element));
     view.show();
