@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include "draw.h"
 
+#define COLOR_POW           nvgRGBA(0x00,0xcf,0xf7,255)
+#define COLOR_BRIGHT        nvgRGBA(0x3a,0xc5,0xec,255)
+#define COLOR_DIM           nvgRGBA(0x11,0x45,0x75,255)
+#define COLOR_DIM_OUTLINE   nvgRGBA(0x10,0x7a,0xa3,255)
 
 static char* cpToUTF8(int cp, char* str)
 {
@@ -135,7 +139,7 @@ void drawBox(NVGcontext *vg, int x, int y, int w, int h)
     nvgBeginPath(vg);
     nvgRect(vg, x,y,w,h);
     nvgFillColor(vg, nvgRGBA(0x04, 0x37, 0x5e, 255));
-    nvgStrokeColor(vg, nvgRGBA(0x10,0x7a,0xa3,255));
+    nvgStrokeColor(vg, COLOR_BRIGHT);
     nvgFill(vg);
     nvgStroke(vg);
 }
@@ -205,7 +209,7 @@ void drawOptButton(NVGcontext *vg, const char *str, int x, int y, int w, int h)
 
     nvgBeginPath(vg);
     nvgRect(vg, x,y,w,h);
-    nvgFillColor(vg, nvgRGBA(0x12,0x58, 0x5d,255));
+    nvgFillColor(vg, COLOR_DIM);
     nvgStrokeColor(vg, nvgRGBA(0x10,0x7a,0xa3,255));
     nvgFill(vg);
     nvgStroke(vg);
@@ -328,7 +332,7 @@ void drawPanDial(NVGcontext *vg, const char *desc, float val, int x, int y, int 
     nvgArc(vg, cx, cy, outter,  start, end, 1);
     nvgArc(vg, cx, cy, inner, end, start, 2);
     nvgClosePath(vg);
-    nvgFillColor(vg, nvgRGBA(0x11,0x45,0x75,255));
+    nvgFillColor(vg, COLOR_DIM);
     nvgFill(vg);
 
     const float len = (3.0/2.0*M_PI)*val;//0.3;
@@ -389,7 +393,7 @@ void drawEnvEdit(NVGcontext *vg, float *dat, int n, int m, int x, int y, int w, 
     nvgBeginPath(vg);
     nvgMoveTo(vg, x, y+h/2);
     nvgLineTo(vg, x+w, y+h/2);
-    nvgStrokeColor(vg, nvgRGBA(0x11,0x45,0x75,255));
+    nvgStrokeColor(vg, COLOR_DIM);
     nvgStroke(vg);
 
     //Draw Sel Line
@@ -397,7 +401,7 @@ void drawEnvEdit(NVGcontext *vg, float *dat, int n, int m, int x, int y, int w, 
         nvgBeginPath(vg);
         nvgMoveTo(vg, x+w*dat[2*m+1], y);
         nvgLineTo(vg, x+w*dat[2*m+1], y+h);
-        nvgStrokeColor(vg, nvgRGBA(0x11,0x45,0x75,255));
+        nvgStrokeColor(vg, COLOR_DIM);
         nvgStroke(vg);
     }
 
@@ -406,8 +410,8 @@ void drawEnvEdit(NVGcontext *vg, float *dat, int n, int m, int x, int y, int w, 
     nvgMoveTo(vg, x+w*dat[1], y+h/2-h/2*dat[0]);
     for(int i=1; i<n; ++i)
         nvgLineTo(vg, x+w*dat[2*i+1], y+h/2-h/2*dat[2*i]);
-    nvgStrokeWidth(vg, 4);
-    nvgStrokeColor(vg, nvgRGBA(0x11,0x45,0x75,255));
+    nvgStrokeWidth(vg, 3);
+    nvgStrokeColor(vg, COLOR_BRIGHT);
     nvgStroke(vg);
     nvgStrokeWidth(vg, 1);
 
@@ -416,9 +420,9 @@ void drawEnvEdit(NVGcontext *vg, float *dat, int n, int m, int x, int y, int w, 
         float xx = x+w*dat[2*i+1];
         float yy = y+h/2-h/2*dat[2*i];
         nvgBeginPath(vg);
-        nvgRect(vg, xx-5,yy-5,10,10);
+        nvgRect(vg, xx-3,yy-3,6,6);
         nvgFillColor(vg, nvgRGBA(0,0,0,255));
-        nvgStrokeColor(vg, nvgRGBA(0x10,0x7a,0xa3,255));
+        nvgStrokeColor(vg, COLOR_BRIGHT);//nvgRGBA(0x10,0x7a,0xa3,255));
         nvgFill(vg);
         nvgStroke(vg);
     }
@@ -743,7 +747,7 @@ void drawPowLabel(NVGcontext *vg, int x, int y, int w, int h)
 void drawPowerButton(NVGcontext *vg, int x, int y, int w, int h)
 {
     drawBox(vg, x, y, w, h);
-    nvgStrokeColor(vg, nvgRGBA(0x00,0xcf,0xf7,255));
+    nvgStrokeColor(vg, COLOR_POW);
     drawPowLabel(vg, x, y, w, h);
 }
 //------------------------------------------------------------------------------
